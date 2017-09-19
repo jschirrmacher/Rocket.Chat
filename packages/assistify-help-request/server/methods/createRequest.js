@@ -41,7 +41,7 @@ Meteor.methods({
 					subscription = RocketChat.models.Subscriptions.createWithRoomAndUser(room, user);
 				}
 
-				RocketChat.models.Subscriptions.updateDesktopNotificationsById(subscription, 'all');
+				RocketChat.models.Subscriptions.updateDesktopNotificationsById(subscription._id, 'all');
 				RocketChat.models.Subscriptions.updateMobilePushNotificationsById(subscription._id, 'all');
 				RocketChat.models.Subscriptions.updateEmailNotificationsById(subscription._id, 'all');
 			});
