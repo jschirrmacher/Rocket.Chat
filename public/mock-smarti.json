@@ -1,0 +1,66 @@
+{
+  "numFound": 1,
+  "start": 0,
+  "maxScore": 3.4,
+  "docs": [
+	{
+	  "_id": "59cb8e2519431a3ece854802",
+	  "_class": "io.redlink.smarti.model.Conversation",
+	  "channelId": "rocket.chat/59cb8e2519431a3ece854800/skRY6Lxx3pkuK8CTj",
+	  "owner": "59cb8e2519431a3ece854800",
+	  "meta": {
+		"status": "Complete",
+		"lastMessageAnalyzed": 1,
+		"tags": [
+
+		]
+	  },
+	  "user": {
+		"_id": "f5d33fd3-edda-4390-ae75-70f77b8eee8f",
+		"displayName": "Anonymous User"
+	  },
+	  "messages": [
+		{
+		  "_id": "Wktzn7CCMJbbsjaZE",
+		  "time": "2017-09-27T11:40:20.946Z",
+		  "origin": "User",
+		  "content": "Hallo. ich hab da mal eine Frage. Wie komm ich denn von Salzburg nach München.",
+		  "user": {
+			"_id": "kbtjLEijDgYnSwcZy",
+			"displayName": "Anonymous User"
+		  },
+		  "private": false,
+		  "votes": 0,
+		  "metadata": {
+
+		  }
+		},
+		{
+		  "_id": "ciWGpiHmoezeAEFn5",
+		  "time": "2017-09-27T11:40:32.226Z",
+		  "origin": "User",
+		  "content": "Mhh. Am besten mit dem Auto.",
+		  "user": {
+			"_id": "kbtjLEijDgYnSwcZy",
+			"displayName": "Anonymous User"
+		  },
+		  "private": false,
+		  "votes": 0,
+		  "metadata": {
+
+		  }
+		}
+	  ],
+	  "context": {
+		"contextType": "rocket.chat",
+		"domain": "localhost:3000",
+		"environment": {
+		  "channel": "Testname",
+		  "channel_id": "skRY6Lxx3pkuK8CTj",
+		  "token": null
+		}
+	  },
+	  "lastModified": "2017-09-27T11:40:32.387Z"
+	}
+  ]
+}

@@ -160,6 +160,33 @@ Meteor.methods({
 		SystemLogger.debug('Smarti - last smarti result requested:', JSON.stringify(rid, '', 2));
 		SystemLogger.debug('Smarti - last message:', JSON.stringify(RocketChat.models.LivechatExternalMessage.findOneById(rid), '', 2));
 		return RocketChat.models.LivechatExternalMessage.findOneById(rid);
+	},
+
+	/**
+	 * A function searching conversations with the given text in the given rooms
+	 *
+	 * @param {string} text - the text we should search for
+	 * @param {[]} accessibleRooms - an array containing all rooms in which given text should be searched
+	 * @param {[]} filter - any additional filters; not used right now
+	 * @param {number} start - pagination offset should be a multiple of rows
+	 * @param {number} rows - number of results being returned
+	 */
+	searchConversations(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+		SystemLogger.debug('Smarti - searchConversations: ', text, filter, start, rows);
+		/*
+		* TODO the call needs to be adapted as soon as an endpoint is ready or now a mock json
+		* file in /public is being loaded
+		*/
+		const response = HTTP.get(Meteor.absoluteUrl('mock-smarti.json'));
+		return response.data.docs.map((item) => {
+			return {
+				_id: item._id,
+				t: 'r',
+				name: item.context.environment.channel,
+				unread: 1, //setting that >0 will show a bubble with the count and boldens the name
+				rid: item.context.environment.channel_id
+			};
+		});
 	}
 });
 
