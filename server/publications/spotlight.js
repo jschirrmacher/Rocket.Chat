@@ -1,5 +1,15 @@
 Meteor.methods({
 	spotlight(text, usernames, type = {users: true, rooms: true}) {
+
+		/**
+		 * A Rocketchat callback triggered before the server search.
+		 */
+		RocketChat.callbacks.run('onSpotlightStart', {
+			text,
+			usernames,
+			type
+		});
+
 		const result = {
 			users: [],
 			rooms: []
@@ -22,6 +32,7 @@ Meteor.methods({
 			if (RocketChat.settings.get('Accounts_AllowAnonymousRead') === true) {
 				result.rooms = RocketChat.models.Rooms.findByNameAndTypeNotDefault(regex, 'c', roomOptions).fetch();
 			}
+			RocketChat.callbacks.run('onSpotlightEnd', { text, result });
 			return result;
 		}
 
@@ -52,6 +63,13 @@ Meteor.methods({
 
 			result.rooms = RocketChat.models.Rooms.findByNameContainingTypesAndTags(text, [{type: 'c'}, {type: 'r', username}, {type: 'e', username}], roomOptions).fetch();
 		}
+
+		/**
+		 * A Rocketchat callback triggered right after the server search and before the results are
+		 * displayed. Result can be altered at this place
+		 */
+		RocketChat.callbacks.run('onSpotlightEnd', { text, result });
+
 		return result;
 	}
 });
