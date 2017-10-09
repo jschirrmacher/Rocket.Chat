@@ -6,10 +6,12 @@ function onSpotlighStartHandler(item) {
 function onSpotlighEndHandler(item) {
 	SystemLogger.debug('onSpotlightEnd', item.text);
 	if (item.result && item.result.rooms) {
-		const subscripedChannels = RocketChat.models.Subscriptions.findByUserId(Meteor.userId()).fetch();
+		const subscripedChannels = RocketChat.models.Subscriptions.findByUserId(Meteor.userId()).fetch().map((subscription) => { return subscription._room; });
 		const publicChannelsNotContaingUser = RocketChat.models.Rooms.findAllPublicNotContainingUserName(Meteor.user().username).fetch();
 		const accessibleRooms = subscripedChannels.concat(publicChannelsNotContaingUser);
 		const conversations = Meteor.call('searchConversations', item.text, accessibleRooms);
+
+		console.log('Room:', JSON.stringify(accessibleRooms));
 
 		// TODO check the result if all rooms are accessible?
 		item.result.rooms = item.result.rooms.concat(conversations);
