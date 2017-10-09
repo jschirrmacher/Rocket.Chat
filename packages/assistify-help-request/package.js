@@ -47,7 +47,6 @@ Package.onUse(function(api) {
 
 	// Hooks
 	api.addFiles('server/hooks/sendMessageToKnowledgeAdapter.js', 'server');
-	api.addFiles('server/hooks/searchHooks.js', ['server']);
 
 	///////// Client
 

@@ -36,25 +36,5 @@ _.extend(RocketChat.models.Rooms, {
 			{$or};
 
 		return this.find(query, options);
-	},
-
-	/**
-	 * Find all public accessible rooms where the given user is not subscribed to
-	 *
-	 * @param {string} username - the username which should be excluded
-	 * @param options
-	 */
-	findAllPublicNotContainingUserName(username, options) {
-		const query = {
-			t: {
-				//todo are those types all public accesible ones?
-				$in: ['r', 'l', 'c']
-			},
-			usernames: {
-				$ne: username
-			}
-		};
-
-		return this.find(query, options);
 	}
 });
