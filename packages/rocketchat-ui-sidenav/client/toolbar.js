@@ -74,7 +74,8 @@ const getFromServer = (cb, type) => {
 				resultsFromServer.push({
 					_id: results.rooms[i]._id,
 					t: results.rooms[i].t,
-					name: results.rooms[i].name
+					name: results.rooms[i].name,
+					highlightedName: results.rooms[i].highlightedName ? results.rooms[i].highlightedName : null
 				});
 			}
 		}
@@ -244,5 +245,14 @@ Template.toolbarSearchList.helpers({
 		} else {
 			return this.name;
 		}
+	},
+
+	highlightedName() {
+		// if (RocketChat.settings.get('UI_Use_Real_Name') && this.fname) {
+		// 	return this.fname;
+		// } else {
+		// 	return this.name;
+		// }
+		return this.highlightedName;
 	}
 });
