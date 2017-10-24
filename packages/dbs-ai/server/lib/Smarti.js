@@ -75,6 +75,14 @@ class SmartiAdapter {
 		}
 	}
 
+	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+		const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
+		SystemLogger.info(`Send get request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
+		// TODO implemenentation to real webservice needed
+		// const response = HTTP.post(URL, options);
+		return [];
+	}
+
 }
 
 class SmartiMock extends SmartiAdapter {
@@ -82,7 +90,16 @@ class SmartiMock extends SmartiAdapter {
 	constructor(adapterProps) {
 		super(adapterProps);
 		this.properties.url = 'http://localhost:8080';
-		delete this.headers.authorization;
+
+		if (this.headers) {
+			delete this.headers.authorization;
+		}
+	}
+
+	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+		const URL = Meteor.absoluteUrl('mock-smarti.json');
+		SystemLogger.info(`Send get mock request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
+		return HTTP.get(URL);
 	}
 }
 
@@ -172,15 +189,12 @@ Meteor.methods({
 	 * @param {number} rows - number of results being returned
 	 */
 	searchConversations(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		SystemLogger.debug('Smarti - searchConversations: ', text, filter, start, rows);
-		/*
-		* TODO the call needs to be adapted as soon as an endpoint is ready or now a mock json
-		* file in /public is being loaded
-		*/
-		const serverData = HTTP.get(Meteor.absoluteUrl('mock-smarti.json'));
+		SystemLogger.info('Smarti - searchConversations: ', text, filter, start, rows);
+
+		const smartiAdapter = _dbs.SmartiAdapterFactory.getInstance();
+		const serverData = smartiAdapter.findInSmarti(text, accessibleRooms, filter, start, rows);
 		const documents = serverData.data.response.docs;
 		const highlighting = serverData.data.highlighting;
-
 
 		return documents.map((item) => {
 			const obj = {
