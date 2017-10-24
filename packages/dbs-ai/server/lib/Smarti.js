@@ -80,7 +80,16 @@ class SmartiAdapter {
 		SystemLogger.info(`Send get request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
 		// TODO implemenentation to real webservice needed
 		// const response = HTTP.post(URL, options);
-		return [];
+		return {
+			data: {
+				response: {
+					numFound: 0,
+					start: 0,
+					maxScore: 3.4,
+					docs: []
+				}
+			}
+		};
 	}
 
 }
@@ -189,12 +198,11 @@ Meteor.methods({
 	 * @param {number} rows - number of results being returned
 	 */
 	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		SystemLogger.info('Smarti - findInSmarti: ', text, filter, start, rows);
-
 		const smartiAdapter = _dbs.SmartiAdapterFactory.getInstance();
 		const serverData = smartiAdapter.onSearch(text, accessibleRooms, filter, start, rows);
 		const documents = serverData.data.response.docs;
 		const highlighting = serverData.data.highlighting;
+		SystemLogger.info('Smarti - findInSmarti: ', text, filter, start, rows, serverData);
 
 		return documents.map((item) => {
 			const obj = {
