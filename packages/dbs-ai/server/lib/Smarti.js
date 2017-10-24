@@ -75,7 +75,7 @@ class SmartiAdapter {
 		}
 	}
 
-	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+	onSearch(text, accessibleRooms, filter = null, start = 0, rows = 10) {
 		const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
 		SystemLogger.info(`Send get request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
 		// TODO implemenentation to real webservice needed
@@ -96,7 +96,7 @@ class SmartiMock extends SmartiAdapter {
 		}
 	}
 
-	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+	onSearch(text, accessibleRooms, filter = null, start = 0, rows = 10) {
 		const URL = Meteor.absoluteUrl('mock-smarti.json');
 		SystemLogger.info(`Send get mock request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
 		return HTTP.get(URL);
@@ -188,11 +188,11 @@ Meteor.methods({
 	 * @param {number} start - pagination offset should be a multiple of rows
 	 * @param {number} rows - number of results being returned
 	 */
-	searchConversations(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		SystemLogger.info('Smarti - searchConversations: ', text, filter, start, rows);
+	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
+		SystemLogger.info('Smarti - findInSmarti: ', text, filter, start, rows);
 
 		const smartiAdapter = _dbs.SmartiAdapterFactory.getInstance();
-		const serverData = smartiAdapter.findInSmarti(text, accessibleRooms, filter, start, rows);
+		const serverData = smartiAdapter.onSearch(text, accessibleRooms, filter, start, rows);
 		const documents = serverData.data.response.docs;
 		const highlighting = serverData.data.highlighting;
 

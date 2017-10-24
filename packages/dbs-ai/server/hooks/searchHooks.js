@@ -6,7 +6,7 @@ function onSpotlighStartHandler(item) {
 function onSpotlighEndHandler(item) {
 	SystemLogger.debug('onSpotlightEnd', item.text);
 	if (item.result && item.result.rooms) {
-		const conversations = Meteor.call('searchConversations', item.text, item.accessibleRooms);
+		const conversations = Meteor.call('findInSmarti', item.text, item.accessibleRooms);
 		item.result.rooms = item.result.rooms.concat(conversations);
 	}
 }
