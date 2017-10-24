@@ -64,7 +64,7 @@
 		  "contextType": "rocket.chat",
 		  "domain": "localhost:3000",
 		  "environment": {
-			"channel": "<strong>Testname</strong>",
+			"channel": "Testname",
 			"channel_id": "skRY6Lxx3pkuK8CTj",
 			"token": null
 		  }

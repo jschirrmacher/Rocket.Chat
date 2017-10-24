@@ -193,7 +193,7 @@ Meteor.methods({
 			};
 
 			if (highlighting && highlighting[item.id] && highlighting[item.id].name) {
-				obj.name = highlighting[item.id].name[0];
+				obj.highlightedName = highlighting[item.id].name[0];
 			}
 
 			return obj;
