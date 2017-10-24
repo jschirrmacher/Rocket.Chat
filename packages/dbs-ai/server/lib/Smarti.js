@@ -177,15 +177,26 @@ Meteor.methods({
 		* TODO the call needs to be adapted as soon as an endpoint is ready or now a mock json
 		* file in /public is being loaded
 		*/
-		const response = HTTP.get(Meteor.absoluteUrl('mock-smarti.json'));
-		return response.data.docs.map((item) => {
-			return {
+		const serverData = HTTP.get(Meteor.absoluteUrl('mock-smarti.json'));
+		const documents = serverData.data.response.docs;
+		const highlighting = serverData.data.highlighting;
+
+
+		return documents.map((item) => {
+			const obj = {
 				_id: item._id,
 				t: 'r',
 				name: item.context.environment.channel,
 				unread: 1, //setting that >0 will show a bubble with the count and boldens the name
-				rid: item.context.environment.channel_id
+				rid: item.context.environment.channel_id,
+				additionalInfo: 'TODO: additionalInfo'
 			};
+
+			if (highlighting && highlighting[item.id] && highlighting[item.id].name) {
+				obj.name = highlighting[item.id].name[0];
+			}
+
+			return obj;
 		});
 	}
 });
