@@ -42,7 +42,7 @@ class SmartiAdapter {
 			this.options.data = requestBody;
 			SystemLogger.debug('Smarti - trigger analysis:', JSON.stringify(options, null, 2));
 
-			const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
+			const URL = `${ this.properties.url }/rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
 			SystemLogger.info(`Send post request: ${ URL } with options: ${ JSON.stringify(options, null, 2) }`);
 			const response = HTTP.post(URL, options);
 
@@ -62,7 +62,7 @@ class SmartiAdapter {
 		const m = RocketChat.models.LivechatExternalMessage.findOneById(room._id);
 
 		if (m) {
-			const URL = `${ this.properties.url }conversation/${ m.conversationId }/publish`;
+			const URL = `${ this.properties.url }/conversation/${ m.conversationId }/publish`;
 			SystemLogger.info(`Send post request: ${ URL }`);
 			const response = HTTP.post(URL);
 			if (response.statusCode === 200) {
@@ -76,22 +76,22 @@ class SmartiAdapter {
 	}
 
 	onSearch(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
-		SystemLogger.info(`Send get request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
-		// TODO implemenentation to real webservice needed
-		// const response = HTTP.post(URL, options);
-		return {
-			data: {
-				response: {
-					numFound: 0,
-					start: 0,
-					maxScore: 3.4,
-					docs: []
-				}
+		const URL = `${ this.properties.url }/rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }/search`;
+		const options = {
+			...this.options,
+			params: {
+				text,
+				start,
+				rows,
+				hl: true,
+				'hl.fl': 'messages',
+				'hl.tag.pre': '<strong>',
+				'hl.tag.post': '</strong>'
 			}
 		};
+		SystemLogger.debug(`Send get request: ${ URL } with options: `, options);
+		return HTTP.get(URL, options);
 	}
-
 }
 
 class SmartiMock extends SmartiAdapter {
@@ -103,12 +103,6 @@ class SmartiMock extends SmartiAdapter {
 		if (this.headers) {
 			delete this.headers.authorization;
 		}
-	}
-
-	onSearch(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		const URL = Meteor.absoluteUrl('mock-smarti.json');
-		SystemLogger.info(`Send get mock request: ${ URL } with filter: ${ filter }, start: ${ start } and rows: ${ rows }`);
-		return HTTP.get(URL);
 	}
 }
 
@@ -200,26 +194,31 @@ Meteor.methods({
 	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
 		const smartiAdapter = _dbs.SmartiAdapterFactory.getInstance();
 		const serverData = smartiAdapter.onSearch(text, accessibleRooms, filter, start, rows);
-		const documents = serverData.data.response.docs;
-		const highlighting = serverData.data.highlighting;
 		SystemLogger.info('Smarti - findInSmarti: ', text, filter, start, rows, serverData);
+		const result = [];
 
-		return documents.map((item) => {
-			const obj = {
-				_id: item._id,
-				t: 'r',
-				name: item.context.environment.channel,
-				unread: 1, //setting that >0 will show a bubble with the count and boldens the name
-				rid: item.context.environment.channel_id,
-				additionalInfo: 'TODO: additionalInfo'
-			};
+		if (serverData.statusCode === 200) {
+			const documents = serverData.data.docs;
+			const highlighting = serverData.data.highlighting;
+			documents.forEach((item) => {
+				const room = RocketChat.models.Rooms.findOneById(item.meta.channel_id[0]);
+				if (room) {
+					const obj = {
+						_id: item.id,
+						t: 'r',
+						name: room.name, //item.context.environment.channel,
+						unread: 0, //setting that >0 will show a bubble with the count and boldens the name
+						rid: item.meta.channel_id[0]
+					};
+					if (highlighting && highlighting[item.id] && highlighting[item.id].message && highlighting[item.id].message.length) {
+						obj.additionalInfo = highlighting[item.id].message[0];
+					}
+					result.push(obj);
+				}
+			});
+		}
 
-			if (highlighting && highlighting[item.id] && highlighting[item.id].name) {
-				obj.highlightedName = highlighting[item.id].name[0];
-			}
-
-			return obj;
-		});
+		return result;
 	}
 });
 
