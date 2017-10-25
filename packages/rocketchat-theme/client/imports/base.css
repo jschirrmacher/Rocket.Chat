@@ -2466,7 +2466,19 @@ label.required::after {
 			& i::before {
 				margin-right: 0;
 			}
+
+			& .additional-info {
+			 	font-size: 92%;
+		  		padding-left: 5px;
+			  	white-space: nowrap;
+			  	overflow: hidden;
+			  	text-overflow: ellipsis;
+	  		}
 		}
+
+		& .popup-item.has-additional-info {
+	  		height: auto;
+  		}
 
 		& .room-title {
 			line-height: 30px;

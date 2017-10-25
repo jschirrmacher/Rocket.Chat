@@ -59,7 +59,8 @@ const getFromServer = (cb, type) => {
 					_id: results.users[i]._id,
 					t: 'd',
 					name: results.users[i].username,
-					fname: results.users[i].name
+					fname: results.users[i].name,
+					additionalInfo: results.users[i].additionalInfo ? results.users[i].additionalInfo : null
 				});
 			}
 		}
@@ -75,7 +76,7 @@ const getFromServer = (cb, type) => {
 					_id: results.rooms[i]._id,
 					t: results.rooms[i].t,
 					name: results.rooms[i].name,
-					highlightedName: results.rooms[i].highlightedName ? results.rooms[i].highlightedName : null
+					additionalInfo: results.rooms[i].additionalInfo ? results.rooms[i].additionalInfo : null
 				});
 			}
 		}
@@ -247,12 +248,7 @@ Template.toolbarSearchList.helpers({
 		}
 	},
 
-	highlightedName() {
-		// if (RocketChat.settings.get('UI_Use_Real_Name') && this.fname) {
-		// 	return this.fname;
-		// } else {
-		// 	return this.name;
-		// }
-		return this.highlightedName;
+	additionalInfo() {
+		return this.additionalInfo ? this.additionalInfo : null;
 	}
 });

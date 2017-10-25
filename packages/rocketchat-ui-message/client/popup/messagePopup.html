@@ -9,7 +9,7 @@
 				{{/if}}
 				<div class="message-popup-items">
 					{{#each data}}
-						<div class="popup-item" data-id="{{_id}}">
+						<div class="popup-item {{#if additionalInfo}}has-additional-info{{/if}}" data-id="{{_id}}">
 							{{> Template.dynamic template=../template}}
 						</div>
 					{{/each}}
