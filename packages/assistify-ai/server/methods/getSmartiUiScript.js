@@ -20,7 +20,7 @@ function loadSmarti() {
 		SystemLogger.debug('Trying to retrieve Smarti-Widget script from', DBS_AI_SMARTI_WIDGET_URL);
 		response = HTTP.get(DBS_AI_SMARTI_WIDGET_URL);
 	} catch (error) {
-		SystemLogger.error('Could not load the Smarti-Widget script at', DBS_AI_SMARTI_URL);
+		SystemLogger.error('Could not load the Smarti-Widget script at', DBS_AI_SMARTI_WIDGET_URL);
 		SystemLogger.debug(error);
 		throw new Meteor.Error('error-unreachable-url');
 	}

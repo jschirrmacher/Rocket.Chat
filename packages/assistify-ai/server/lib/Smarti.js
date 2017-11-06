@@ -157,7 +157,7 @@ export class SmartiAdapterFactory {
 
 			SystemLogger.debug(RocketChat.settings);
 
-			const useMock = false;
+			const useMock = true;
 			if (useMock) { //todo: proper mocking
 				this.singleton = new SmartiMock(adapterProps);
 			} else {
@@ -191,7 +191,7 @@ Meteor.methods({
 	 * @param {number} rows - number of results being returned
 	 */
 	findInSmarti(text, accessibleRooms, filter = null, start = 0, rows = 10) {
-		const smartiAdapter = _dbs.SmartiAdapterFactory.getInstance();
+		const smartiAdapter = SmartiAdapterFactory.getInstance();
 		const serverData = smartiAdapter.onSearch(text, accessibleRooms, filter, start, rows);
 		SystemLogger.info('Smarti - findInSmarti: ', text, filter, start, rows, serverData);
 		const result = [];
@@ -205,8 +205,8 @@ Meteor.methods({
 					const obj = {
 						_id: item.id,
 						t: 'r',
-						name: room.name, //item.context.environment.channel,
-						unread: 0, //setting that >0 will show a bubble with the count and boldens the name
+						name: room.name,
+						unread: 0,
 						rid: item.meta.channel_id[0]
 					};
 					if (highlighting && highlighting[item.id] && highlighting[item.id].message && highlighting[item.id].message.length) {
