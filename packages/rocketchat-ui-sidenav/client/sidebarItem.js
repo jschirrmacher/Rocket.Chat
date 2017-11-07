@@ -19,15 +19,16 @@ Template.sidebarItem.events({
 			const currentListItem = $(e.currentTarget);
 			const listOffset = currentListItem.parent().position().top;
 			const listItemOffset = currentListItem.position().top;
-			const totalOffset = listOffset + listItemOffset;
-
-			//todo: calculate if eough space to bottom/top
-
-			const top = `${ totalOffset }px`; //$(e.currentTarget).position().top; //e.clientY;
+			let totalOffset = listOffset + listItemOffset;
+			const hoverHeight = 300;
+			if (totalOffset + hoverHeight > $(window).height()) {
+				totalOffset -= hoverHeight - currentListItem.height();
+			}
+			const top = `${ totalOffset }px`;
 			this.hoverView = Blaze.renderWithData(Template.sidebarItemHover, {
 				top,
 				content: this.additionalData,
-				color: '#ccc',
+				height: `${ hoverHeight }px`,
 				refItem: this._id
 			}, parent);
 		}
