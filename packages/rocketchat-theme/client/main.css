@@ -21,6 +21,7 @@
 @import 'imports/components/sidebar/sidebar-flex.css';
 @import 'imports/components/sidebar/toolbar.css';
 @import 'imports/components/sidebar/rooms-list.css';
+@import 'imports/components/sidebar/sidebar-hover-item.css';
 
 /* Main */
 @import 'imports/components/flex-nav.css';

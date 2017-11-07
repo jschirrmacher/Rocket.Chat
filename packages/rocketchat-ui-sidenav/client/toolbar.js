@@ -60,8 +60,7 @@ const getFromServer = (cb, type) => {
 					_id: results.users[i]._id,
 					t: 'd',
 					name: results.users[i].username,
-					fname: results.users[i].name,
-					additionalInfo: results.users[i].additionalInfo ? results.users[i].additionalInfo : null
+					fname: results.users[i].name
 				});
 			}
 		}
@@ -77,7 +76,7 @@ const getFromServer = (cb, type) => {
 					_id: results.rooms[i]._id,
 					t: results.rooms[i].t,
 					name: results.rooms[i].name,
-					additionalInfo: results.rooms[i].additionalInfo ? results.rooms[i].additionalInfo : null
+					additionalData: results.rooms[i].additionalData ? results.rooms[i].additionalData : null
 				});
 			}
 		}
@@ -237,9 +236,5 @@ Template.toolbar.events({
 		} else {
 			e.preventDefault();
 		}
-	},
-
-	additionalInfo() {
-		return this.additionalInfo ? this.additionalInfo : null;
 	}
 });

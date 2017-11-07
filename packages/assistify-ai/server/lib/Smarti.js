@@ -85,8 +85,8 @@ class SmartiAdapter {
 				rows,
 				hl: true,
 				'hl.fl': 'messages',
-				'hl.tag.pre': '<strong>',
-				'hl.tag.post': '</strong>'
+				'hl.simple.pre': '<strong class="highlight">',
+				'hl.simple.post': '</strong>'
 			}
 		};
 		SystemLogger.debug(`Send get request: ${ URL } with options: `, options);
@@ -207,10 +207,17 @@ Meteor.methods({
 						t: 'r',
 						name: room.name,
 						unread: 0,
-						rid: item.meta.channel_id[0]
+						rid: item.meta.channel_id[0],
+						additionalData: ''
 					};
-					if (highlighting && highlighting[item.id] && highlighting[item.id].message && highlighting[item.id].message.length) {
-						obj.additionalInfo = highlighting[item.id].message[0];
+					if (highlighting && highlighting[item.id] && highlighting[item.id].messages && highlighting[item.id].messages.length) {
+							// ?msg=Pp68WgDd4MoA6kjdQ
+						obj.additionalData += '<h3>Gefundene Nachrichten</h3>';
+						obj.additionalData += '<ul>';
+						highlighting[item.id].messages.forEach((highlightedItem) => {
+							obj.additionalData += `<li><div>${ highlightedItem }</div></li>`;
+						});
+						obj.additionalData += '</ul>';
 					}
 					result.push(obj);
 				}

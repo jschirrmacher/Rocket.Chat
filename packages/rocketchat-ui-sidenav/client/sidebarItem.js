@@ -13,6 +13,30 @@ Template.sidebarItem.events({
 	'click [data-id], click .sidebar-item__link'() {
 		return menu.close();
 	},
+	'mouseover [data-id]'(e) {
+		if (this.additionalData) {
+			const parent = document.querySelector('.main-content');
+			const currentListItem = $(e.currentTarget);
+			const listOffset = currentListItem.parent().position().top;
+			const listItemOffset = currentListItem.position().top;
+			const totalOffset = listOffset + listItemOffset;
+
+			//todo: calculate if eough space to bottom/top
+
+			const top = `${ totalOffset }px`; //$(e.currentTarget).position().top; //e.clientY;
+			this.hoverView = Blaze.renderWithData(Template.sidebarItemHover, {
+				top,
+				content: this.additionalData,
+				color: '#ccc',
+				refItem: this._id
+			}, parent);
+		}
+	},
+	'mouseout [data-id]'() {
+		if (this.additionalData && this.hoverView) {
+			Blaze.remove(this.hoverView);
+		}
+	},
 	'click .sidebar-item__menu'(e) {
 		const canLeave = () => {
 			const roomData = Session.get(`roomData${ this.rid }`);
