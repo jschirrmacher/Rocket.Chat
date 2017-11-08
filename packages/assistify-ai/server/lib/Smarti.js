@@ -84,7 +84,7 @@ class SmartiAdapter {
 				start,
 				rows,
 				hl: true,
-				'hl.fl': 'messages',
+				'hl.fl': 'text',
 				'hl.simple.pre': '<strong class="highlight">',
 				'hl.simple.post': '</strong>'
 			}
@@ -202,6 +202,7 @@ Meteor.methods({
 			documents.forEach((item) => {
 				const room = RocketChat.models.Rooms.findOneById(item.meta.channel_id[0]);
 				if (room) {
+					//create room obj from document
 					const obj = {
 						_id: item.id,
 						t: 'r',
@@ -210,15 +211,27 @@ Meteor.methods({
 						rid: item.meta.channel_id[0],
 						additionalData: ''
 					};
-					if (highlighting && highlighting[item.id] && highlighting[item.id].messages && highlighting[item.id].messages.length) {
-							// ?msg=Pp68WgDd4MoA6kjdQ
+
+					//generate additionalData based on highlighting information (html encoded)
+					if (item.messages) {
+						const roomLink = `/request/${ room.fname }`;
 						obj.additionalData += '<h3>Gefundene Nachrichten</h3>';
-						obj.additionalData += '<ul>';
-						highlighting[item.id].messages.forEach((highlightedItem) => {
-							obj.additionalData += `<li><div>${ highlightedItem }</div></li>`;
+						obj.additionalData += '<div class="flex-grow"><ul>';
+
+						item.messages.forEach((message) => {
+							const highlightingKey = `${ item.id }_${ message.id }`;
+							if (highlighting && highlighting[highlightingKey] && highlighting[highlightingKey].text && highlighting[highlightingKey].text.length) {
+								highlighting[highlightingKey].text.forEach((highlightedItem) => {
+									const msgLink = `${ roomLink }?msg=${ message.id }`;
+									obj.additionalData += `<li><a href="${ msgLink }"><div>${ highlightedItem }</div></a></li>`;
+								});
+							}
 						});
-						obj.additionalData += '</ul>';
+
+						obj.additionalData += '</ul></div>';
+						obj.additionalData += `<div><a href="${ roomLink }">zum Channel</a></div>`;
 					}
+
 					result.push(obj);
 				}
 			});
