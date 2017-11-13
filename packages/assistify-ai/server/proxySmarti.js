@@ -55,7 +55,7 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation', {authRequired: true}
 });
 
 RocketChat.API.v1.addRoute('assistify/smarti/conversation/:id', {authRequired: true}, {
-	get () {
+	get() {
 		console.log(this.urlParams.id);
 	},
 
