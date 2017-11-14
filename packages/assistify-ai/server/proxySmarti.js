@@ -1,4 +1,4 @@
-/* globals RocketChat, SystemLogger */
+/* globals RocketChat */
 
 const verbs = {
 	get: 'GET',
@@ -13,7 +13,7 @@ function propagateToSmarti(method, path, body) {
 
 	//get the target Smarti-URL, add the client secret to the header and send the request to Smarti
 	try {
-		SystemLogger.debug(method, 'to', URL);
+		this.logger.debug(method, 'to', URL);
 		const response = HTTP.call(method,
 			URL,
 			{
@@ -28,11 +28,12 @@ function propagateToSmarti(method, path, body) {
 				// npmRequestOptions ? : any;
 				// beforeSend ? : Function
 			});
-		SystemLogger.debug('Successfully requested', method, 'with body', body, 'to', URL, 'got', JSON.stringify(response));
-
+		this.logger.debug('Successfully requested', method, 'with body', body, 'to', URL, 'got', JSON.stringify(response));
+		return true;
 	} catch (error) {
-		SystemLogger.error('Could not complete', method, 'to', URL);
-		SystemLogger.debug(error);
+		this.logger.error('Could not complete', method, 'to', URL);
+		this.logger.debug(error);
+		return false;
 	}
 }
 
@@ -56,11 +57,11 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation', {authRequired: true}
 
 RocketChat.API.v1.addRoute('assistify/smarti/conversation/:id', {authRequired: true}, {
 	get() {
-		console.log(this.urlParams.id);
+		this.logger.debug(this.urlParams.id);
 	},
 
 	post() {
-		console.log(this.urlParams.id);
+		this.logger.debug(this.urlParams.id);
 	}
 });
 
