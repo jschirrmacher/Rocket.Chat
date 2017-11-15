@@ -7,14 +7,14 @@
 		<div class="create-channel__inputs">
 			<div class="rc-input">
 				<label class="rc-input__label">
-					<div class="rc-input__title">{{_ "New_request_for_expertise"}}</div>
+					<div class="rc-input__title">{{_ "Expertise"}}</div>
 					<div class="rc-input__wrapper">
 						<div class="rc-input__icon">
 							<svg class="rc-icon rc-input__icon-svg rc-input__icon-svg--lock" aria-hidden="true">
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-lock"></use>
 							</svg>
 						</div>
-						<input name="expertise" type="text" class="rc-input__element" id="expertise-search" placeholder="Expertise"  autocomplete=off value={{expertise}} >
+						<input name="expertise" type="text" class="rc-input__element" id="expertise-search" placeholder={{_ "New_request_for_expertise"}}  autocomplete=off value={{expertise}} >
 					</div>
 					{{#with config}}
 						{{#if autocomplete 'isShowing'}}
@@ -29,14 +29,14 @@
 			</div>
 			<div class="rc-input {{#if requestTitleError}}rc-input--error{{/if}}">
 				<label class="rc-input__label">
-					<div class="rc-input__title">{{_ "New_request_title"}}</div>
+					<div class="rc-input__title">{{_ "Name"}}</div>
 					<div class="rc-input__wrapper">
 						<div class="rc-input__icon">
 							<svg class="rc-icon rc-input__icon-svg rc-input__icon-svg--flag" aria-hidden="true">
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-flag"></use>
 							</svg>
 						</div>
-						<input name="request_title" type="text" class="rc-input__element" id="request_title" placeholder={{_ "Title"}} autocomplete="off">
+						<input name="request_title" type="text" class="rc-input__element" id="request_title" placeholder={{_ "New_request_title"}} autocomplete="off">
 					</div>
 				</label>
 				{{#if requestTitleInUse}}
@@ -58,12 +58,12 @@
 			</div>
 			<div class="rc-input">
 				<label class="rc-input__label">
-					<div class="rc-input__title">{{_ "New_request_first_question"}}</div>
+					<div class="rc-input__title">{{_ "Your_question"}}</div>
 					<div class="rc-input__wrapper">
 						<div class="rc-input__icon">
 							{{> icon block="rc-input__icon-svg" icon="send"}}
 						</div>
-						<input name="first_question" type="text" class="rc-input__element" id="first_question" placeholder={{_ "Type_your_question"}} autocomplete="off">
+						<input name="first_question" type="text" class="rc-input__element" id="first_question" placeholder={{_ "New_request_first_question"}} autocomplete="off">
 					</div>
 				</label>
 			</div>

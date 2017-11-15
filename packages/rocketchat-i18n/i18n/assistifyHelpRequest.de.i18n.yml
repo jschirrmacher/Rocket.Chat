@@ -1,6 +1,6 @@
 application: Anwendung
 Assistify_room_count: Letzte Raumnummer
-Choose_experts: Die auswählen, die sich damit auskennen
+Choose_experts: Experten auswählen
 Close_HelpRequest: Chat beenden
 Close_request_comment: Werden Sie hier Ihre (berühmten) letzten Worte los!
 Close_request_warning: Ist die Anfrage abschließend beantwortet, dann schließen Sie den Chat. So können wir aus dem Geschriebenen lernen.
@@ -11,7 +11,7 @@ delete-r: Anfrage löschen
 Expertise_description: Ein Thema beschreibt ein Wissensgebiet. Experten beantworten hierzu Anfragen
 Expertise_explanation: Ein Thema beschreibt ein Wissensgebiet. Zu einem Thema können Anfragen erstellt werden, die von den Experten, die dem Thema als Mitglieder zugeordnet sind, beantwortet werden können.
 Expertise_needs_experts: Bitte Experten auswählen, um eine Expertise zu definieren
-Expertise_title: Titel des Themas
+Expertise_title: Geben Sie dem Thema einen Namen
 Expertise: Thema
 Expertises: Themen
 Experts_channel: Expertenkanal
@@ -23,11 +23,11 @@ Leave_expertise_warning: Sind Sie sicher, dass Sie das Thema "%s" verlassen woll
 Leave_request_warning: Sind sie Sicher, dass Sie die Anfrage "%s" verlassen wollen? Sie können sie danach nicht mehr einsehen und auch nicht in der Suche finden!
 More_requests: Weitere Anfragen
 New_expertise: Neues Thema
-New_request_for_expertise: Neue Anfrage zum Thema
+New_request_for_expertise: Wählen Sie das Thema Ihrer Frage aus
 New_request: Neue Anfrage
 New_request_created: Die neue Anfrage wurde erstellt
 New_request_first_question: Was möchten Sie fragen?
-New_request_title: Optional: Einen Titel angeben
+New_request_title: Ein Name hilft, die Anfrage wieder zu finden
 No_expertise_yet: Keinem Thema zugeordnet
 No_requests_yet: Keine Anfragen bisher
 release: Version
@@ -43,6 +43,7 @@ Search_Requests: Anfragen suchen
 system: System
 SystemContext: System-Kontext
 transaction: Transaktion
-Type_your_question: Geben Sie Ihre Frage ein
 view-e-room: Alle Themen einsehen
 view-r-room: Alle Anfragen einsehen
+Your_question: Ihre Frage
+

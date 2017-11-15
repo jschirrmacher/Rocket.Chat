@@ -1,6 +1,6 @@
 application: Application
 Asssitify_room_count: Roomcount
-Choose_experts: Choose those who know
+Choose_experts: Choose experts
 Close_HelpRequest: Close chat
 Close_request_comment: You can add (famous) last words
 Close_request_warning: Please do close the request once you are finished answering the questions asked. This way, we can learn from what you have written.
@@ -22,8 +22,8 @@ New_expertise: New topic
 New_request_for_expertise: New request for topic
 New_request: New request
 New_request_created: Request created successfully
-New_request_first_question: Want to ask something?
-New_request_title: Optional: Assign a title
+New_request_first_question: What do you want to ask
+New_request_title: A name helps to find the request lateron
 No_expertise_yet: No topics yet
 No_requests_yet: No requests yet
 release: Version
@@ -39,10 +39,10 @@ Search_Requests: Search requests
 system: System
 SystemContext: System context
 transaction: Transaction
-Type_your_question: Type your question
 create-r: Create request
 create-e: Create topic
 delete-r: Delete request
 delete-e: Delete topic
 view-r-room: View all requests
 view-e-room: View all topics
+Your_question: Your question
