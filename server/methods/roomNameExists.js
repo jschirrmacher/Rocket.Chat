@@ -15,7 +15,7 @@ Meteor.methods({
 
 		if (!Meteor.userId()) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', {
-				method: 'roomExists'
+				method: 'roomDisplayNameExists'
 			});
 		}
 		const room = RocketChat.models.Rooms.findOneByDisplayName(rid);
