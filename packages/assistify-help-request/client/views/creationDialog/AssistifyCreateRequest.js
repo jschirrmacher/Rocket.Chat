@@ -2,6 +2,16 @@
 import {RocketChat} from 'meteor/rocketchat:lib';
 import {FlowRouter} from 'meteor/kadira:flow-router';
 import {ReactiveVar} from 'meteor/reactive-var';
+import toastr from 'toastr';
+
+const validateRequestName = (name) => {
+	if (RocketChat.settings.get('UI_Allow_room_names_with_special_chars')) {
+		return true;
+	} else {
+		const reg = new RegExp(`^${ RocketChat.settings.get('UTF8_Names_Validation') }$`);
+		return name.length === 0 || reg.test(name);
+	}
+};
 
 const acEvents = {
 	'click .rc-popup-list__item'(e, t) {
@@ -27,6 +37,7 @@ const acEvents = {
 		t.ac.onBlur(e);
 	}
 };
+
 
 Template.AssistifyCreateRequest.helpers({
 	autocomplete(key) {
@@ -57,13 +68,38 @@ Template.AssistifyCreateRequest.helpers({
 	createIsDisabled() {
 		const instance = Template.instance();
 
-		if (instance.validExpertise.get()) {
-			return '';
-		} else {
-			return 'disabled';
+		if (!instance.requestTitle.get()) {
+			if (instance.validExpertise.get()) {
+				return '';
+			} else {
+				return 'disabled';
+			}
+		} else if (instance.requestTitle.get()) {
+			if (instance.validExpertise.get() && !instance.requestTitleInUse.get() && !instance.invalidTitle.get()) {
+				return '';
+			} else {
+				return 'disabled';
+			}
 		}
+	},
+	invalidTitle() {
+		const instance = Template.instance();
+		return instance.invalidTitle.get();
+	},
+	requestTitleInUse() {
+		const instance = Template.instance();
+		return instance.requestTitleInUse.get();
+	},
+	requestTitleError() {
+		const instance = Template.instance();
+		return instance.invalidTitle.get() || instance.requestTitleInUse.get();
 	}
+	// noSplCharAllowed() {
+	// 	const instance = Template.instance();
+	// 	return instance.noSplCharAllowed.get();
+	// }
 });
+
 
 Template.AssistifyCreateRequest.events({
 	...acEvents,
@@ -79,14 +115,56 @@ Template.AssistifyCreateRequest.events({
 			t.validExpertise.set(false);
 			t.expertise.set('');
 		}
+		if (t.expertise.get() && t.requestTitle.get()) {
+			const requestName = `${ t.expertise.get() }-${ t.requestTitle.get() }`;
+			t.invalidTitle.set(!validateRequestName(requestName));
+			t.requestTitleInUse.set(undefined);
+			t.checkRequestName(requestName);
+		}
+	},
+	'input #request_title'(e, t) {
+		const input = e.target;
+		//const length = input.value.length;
+		if (input.value !== t.requestTitle.get()) {
+			t.requestTitle.set(input.value);
+		} else {
+			t.requestTitle.set(false);
+		}
+
+		if (t.expertise.get() && input.value) {
+			const requestName = `${ input.value }`;
+			t.invalidTitle.set(!validateRequestName(requestName));
+			if (RocketChat.settings.get('UI_Allow_room_names_with_special_chars')) {
+				t.checkRequestDisplayName(requestName);
+			} else {
+				t.checkRequestName(requestName);
+			}
+			// t.invalidTitle.set(!validateRequestName(requestName));
+			// t.checkRequestName(requestName);
+			t.requestTitleInUse.set(undefined);
+		} else if (!input.value) {
+			t.invalidTitle.set(false);
+			t.requestTitleInUse.set(undefined);
+		}
+
+	},
+	'input #first_question'(e, t) {
+		const input = e.target;
+		//const length = input.value.length;
+		if (input.value) {
+			t.openingQuestion.set(input.value);
+		} else {
+			t.openingQuestion.set(false);
+		}
 	},
 	'submit create-channel__content, click .js-save-request'(event, instance) {
 		event.preventDefault();
 		const expertise = instance.expertise.get();
-
+		const requestTitle = instance.requestTitle.get();
+		const openingQuestion = instance.openingQuestion.get();
 		if (expertise) {
 			instance.errorMessage.set(null);
-			Meteor.call('createRequest', '', expertise, (err, result) => {
+			Meteor.call('createRequest', requestTitle, expertise, openingQuestion, (err, result) => {
 				if (err) {
 					console.log(err);
 					switch (err.error) {
@@ -99,11 +177,17 @@ Template.AssistifyCreateRequest.events({
 						case 'error-archived-duplicate-name':
 							toastr.error(TAPi18n.__('Duplicate_archived_channel_name', name));
 							return;
+						case 'error-invalid-room-name':
+							console.log('room name slug error');
+							// 	toastr.error(TAPi18n.__('Duplicate_archived_channel_name', name));
+							toastr.error(TAPi18n.__('Invalid_room_name', err.details.channel_name));
+							return;
 						default:
 							return handleError(err);
 					}
 				}
-
+				console.log('Room Created');
+				toastr.success(TAPi18n.__('New_request_created'));
 				const roomCreated = RocketChat.models.Rooms.findOne({_id: result.rid});
 				FlowRouter.go('request', {name: roomCreated.name}, FlowRouter.current().queryParams);
 			});
@@ -133,7 +217,33 @@ Template.AssistifyCreateRequest.onCreated(function() {
 	instance.expertise = new ReactiveVar(''); //the value of the text field
 	instance.validExpertise = new ReactiveVar(false);
 	instance.errorMessage = new ReactiveVar(null);
-
+	instance.requestTitle = new ReactiveVar('');
+	instance.openingQuestion = new ReactiveVar('');
+	instance.requestTitleInUse = new ReactiveVar(undefined);
+	instance.invalidTitle = new ReactiveVar(false);
+	instance.error = new ReactiveVar(null);
+	instance.checkRequestName = _.debounce((name) => {
+		if (validateRequestName(name)) {
+			return Meteor.call('roomNameExists', name, (error, result) => {
+				if (error) {
+					return;
+				}
+				instance.requestTitleInUse.set(result);
+			});
+		}
+		instance.requestTitleInUse.set(undefined);
+	}, 500);
+	instance.checkRequestDisplayName = _.debounce((name) => {
+		if (validateRequestName(name)) {
+			return Meteor.call('roomDisplayNameExists', name, (error, result) => {
+				if (error) {
+					return;
+				}
+				instance.requestTitleInUse.set(result);
+			});
+		}
+		instance.requestTitleInUse.set(undefined);
+	}, 500);
 	this.checkExpertise = _.debounce((expertise) => {
 		return Meteor.call('assistify:isValidExpertise', expertise, (error, result) => {
 			if (error) {
