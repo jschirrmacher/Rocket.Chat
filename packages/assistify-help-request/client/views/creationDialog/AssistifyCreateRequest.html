@@ -14,8 +14,16 @@
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-lock"></use>
 							</svg>
 						</div>
-						<input name="expertise" type="text" class="rc-input__element" id="expertise-search" placeholder={{_ "New_request_for_expertise"}}  autocomplete=off value={{expertise}} >
+						<input name="expertise" type="text" class="rc-input__element" id="expertise-search"
+							   placeholder={{_ "New_request_for_expertise"}}  autocomplete=off value={{expertise}}>
 					</div>
+					{{#unless autocomplete 'isShowing'}}
+						{{#if expertise}}
+							{{#unless validExpertise}}
+								{{> AssistifyCreateInputError text="Expertise_does_not_exist"}}
+							{{/unless}}
+						{{/if}}
+					{{/unless}}
 					{{#with config}}
 						{{#if autocomplete 'isShowing'}}
 							<div class="fadeInDown">
@@ -36,24 +44,15 @@
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-flag"></use>
 							</svg>
 						</div>
-						<input name="request_title" type="text" class="rc-input__element" id="request_title" placeholder={{_ "New_request_title"}} autocomplete="off">
+						<input name="request_title" type="text" class="rc-input__element" id="request_title"
+							   placeholder={{_ "New_request_title"}} autocomplete="off">
 					</div>
 				</label>
 				{{#if requestTitleInUse}}
-					<div class="rc-input__error">
-						<div class="rc-input__error-icon">
-							{{> icon block="rc-input__error-icon" icon="warning" classes="rc-input__error-icon-svg"}}
-						</div>
-						<div class="rc-input__error-message">{{_ "Request_already_exists"}}</div>
-					</div>
+					{{> AssistifyCreateInputError text="Request_already_exists"}}
 				{{/if}}
 				{{#if invalidTitle}}
-					<div class="rc-input__error">
-						<div class="rc-input__error-icon">
-							{{> icon block="rc-input__error-icon" icon="warning" classes="rc-input__error-icon-svg"}}
-						</div>
-						<div class="rc-input__error-message">{{_ "Request_no_special_char"}}</div>
-					</div>
+					{{> AssistifyCreateInputError text="Request_no_special_char"}}
 				{{/if}}
 			</div>
 			<div class="rc-input">
@@ -63,7 +62,8 @@
 						<div class="rc-input__icon">
 							{{> icon block="rc-input__icon-svg" icon="send"}}
 						</div>
-						<input name="first_question" type="text" class="rc-input__element" id="first_question" placeholder={{_ "New_request_first_question"}} autocomplete="off">
+						<input name="first_question" type="text" class="rc-input__element" id="first_question"
+							   placeholder={{_ "New_request_first_question"}} autocomplete="off">
 					</div>
 				</label>
 			</div>

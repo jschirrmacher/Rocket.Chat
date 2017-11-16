@@ -17,12 +17,7 @@
 					</div>
 				</label>
 				{{#if inUse}}
-					<div class="rc-input__error">
-						<div class="rc-input__error-icon">
-							{{> icon block="rc-input__error-icon" icon="warning" classes="rc-input__error-icon-svg"}}
-						</div>
-						<div class="rc-input__error-message">{{_ "Channel_already_exist_static"}}</div>
-					</div>
+					{{> AssistifyCreateInputError text="Channel_already_exist_static"}}
 				{{/if}}
 			</div>
 			<div class="rc-input">
@@ -39,15 +34,10 @@
 							<input type="text" class="rc-tags__input {{#if invalidMembers}}rc-input--error{{/if}}" placeholder="{{_ "Choose_experts"}}"
 								   name="experts" autocomplete="off"/>
 						</div>
-						{{#if invalidMembers}}
-							<div class="rc-input__error">
-								<div class="rc-input__error-icon">
-									{{> icon block="rc-input__error-icon" icon="warning" classes="rc-input__error-icon-svg"}}
-								</div>
-								<div class="rc-input__error-message">{{_ "Expertise_needs_experts"}}</div>
-							</div>
-						{{/if}}
 					</div>
+					{{#if invalidMembers}}
+						{{> AssistifyCreateInputError text="Expertise_needs_experts"}}
+					{{/if}}
 					{{#with config}}
 						{{#if autocomplete 'isShowing'}}
 							<div class="fadeInDown">

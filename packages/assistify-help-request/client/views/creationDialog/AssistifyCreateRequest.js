@@ -18,13 +18,6 @@ const acEvents = {
 		t.ac.onItemClick(this, e);
 	},
 	'keydown [name="expertise"]'(e, t) {
-		if ([8, 46].includes(e.keyCode) && e.target.value === '') {
-			const users = t.selectedUsers;
-			const usersArr = users.get();
-			usersArr.pop();
-			return users.set(usersArr);
-		}
-
 		t.ac.onKeyDown(e);
 	},
 	'keyup [name="expertise"]'(e, t) {
@@ -90,6 +83,14 @@ Template.AssistifyCreateRequest.helpers({
 		const instance = Template.instance();
 		return instance.requestTitleInUse.get();
 	},
+	validExpertise() {
+		const instance = Template.instance();
+		return instance.validExpertise.get();
+	},
+	expertise() {
+		const instance = Template.instance();
+		return instance.expertise.get();
+	},
 	requestTitleError() {
 		const instance = Template.instance();
 		return instance.invalidTitle.get() || instance.requestTitleInUse.get();
@@ -109,10 +110,10 @@ Template.AssistifyCreateRequest.events({
 		const length = input.value.length;
 		document.activeElement === input && e && /input/i.test(e.type) && (input.selectionEnd = position + input.value.length - length);
 		if (input.value) {
+			t.delaySetExpertise(input.value);
 			t.checkExpertise(input.value);
-			t.expertise.set(input.value);
 		} else {
-			t.validExpertise.set(false);
+			t.delaySetExpertise(false);
 			t.expertise.set('');
 		}
 		if (t.expertise.get() && t.requestTitle.get()) {
@@ -244,7 +245,7 @@ Template.AssistifyCreateRequest.onCreated(function() {
 		}
 		instance.requestTitleInUse.set(undefined);
 	}, 500);
-	this.checkExpertise = _.debounce((expertise) => {
+	instance.checkExpertise = _.debounce((expertise) => {
 		return Meteor.call('assistify:isValidExpertise', expertise, (error, result) => {
 			if (error) {
 				instance.validExpertise.set(false);
@@ -253,6 +254,9 @@ Template.AssistifyCreateRequest.onCreated(function() {
 			}
 		});
 	}, 500);
+	instance.delaySetExpertise = _.debounce((expertise) => {
+		instance.expertise.set(expertise);
+	}, 200);
 
 	// instance.clearForm = function() {
 	// 	instance.requestRoomName.set('');

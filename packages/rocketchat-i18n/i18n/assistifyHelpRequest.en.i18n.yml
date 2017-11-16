@@ -5,6 +5,7 @@ Close_HelpRequest: Close chat
 Close_request_comment: You can add (famous) last words
 Close_request_warning: Please do close the request once you are finished answering the questions asked. This way, we can learn from what you have written.
 Expertise_description: A topic is an area of knowledge with known experts.
+Expertise_does_not_exist: Expertise does not exist
 Expertise_explanation: A topic is an area of knowledge. Experts join a topic in order to help others solve their question in that area.
 Expertise_needs_experts: Select some experts in order to define an topic
 Expertise_title: Topic title
@@ -27,7 +28,7 @@ New_request_title: A name helps to find the request lateron
 No_expertise_yet: No topics yet
 No_requests_yet: No requests yet
 release: Version
-Request_already_exists: A request with the this name already exists.
+Request_already_exists: A request with this name already exists.
 Request_closed: Request closed__comment__
 Request_closed_explanation: You can keep on chatting, but we'll not learn from that. In case of additional questions, please create new requests.
 Request_description: A request is a conversation starting with a question on a particular topic. When finishing such a conversation, our system is going to learn from it in order to accelerate further request-solutions on that topic.
