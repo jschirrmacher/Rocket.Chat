@@ -8,7 +8,7 @@ Expertise_description: A topic is an area of knowledge with known experts.
 Expertise_does_not_exist: Expertise does not exist
 Expertise_explanation: A topic is an area of knowledge. Experts join a topic in order to help others solve their question in that area.
 Expertise_needs_experts: Select some experts in order to define an topic
-Expertise_title: Topic title
+Expertise_title: The name of the topic
 Expertise: Topic
 Expertises: Topics
 Experts_channel: Experts channel
@@ -20,11 +20,11 @@ Leave_expertise_warning: Are you sure you want to leave the topic "%s"? You'll n
 Leave_request_warning: Are you sure you want to leave the request "%s"? You'll not be able to see and join the conversation lateron, neither you'll find it searching for it!
 More_requests: Other requests
 New_expertise: New topic
-New_request_for_expertise: New request for topic
+New_request_for_expertise: The topic of the new request
 New_request: New request
 New_request_created: Request created successfully
 New_request_first_question: What do you want to ask
-New_request_title: A name helps to find the request lateron
+New_request_title: A name helps to find the request later on
 No_expertise_yet: No topics yet
 No_requests_yet: No requests yet
 release: Version
@@ -46,4 +46,4 @@ delete-r: Delete request
 delete-e: Delete topic
 view-r-room: View all requests
 view-e-room: View all topics
-Your_question: Your question
+Your_question: Question
