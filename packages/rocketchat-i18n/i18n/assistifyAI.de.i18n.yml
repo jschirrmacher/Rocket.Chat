@@ -3,10 +3,10 @@ Assistify_AI_Widget_Posting_Type_PostRichText: RichText posten
 Assistify_AI_Widget_Posting_Type_PostText: Text posten
 Assistify_AI_Widget_Posting_Type_SuggestText: Text vorschlagen
 Assistify_AI_Widget_Posting_Type: Posting-Verhalten des Widgets
-DBS_AI_Redlink_Auth_Token: Basic-Auth Token
-DBS_AI_Redlink_Domain: Domäne für Nachrichten
-DBS_AI_Redlink_Hook_Token: Token für eingende Nachrichten
-DBS_AI_Redlink_URL: URL des Service
+DBS_AI_Smarti_Auth_Token: Basic-Auth Token
+DBS_AI_Smarti_Domain: Domäne für Nachrichten
+DBS_AI_Smarti_Hook_Token: Token für eingende Nachrichten
+DBS_AI_Smarti_URL: URL des Service
 DBS_AI_Source_APIAI: API.ai
 DBS_AI_Source_Redlink: Redlink
 DBS_AI_Source_Smarti: Smarti

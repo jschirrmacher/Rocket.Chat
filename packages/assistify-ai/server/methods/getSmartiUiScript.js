@@ -5,14 +5,14 @@ let timeoutHandle;
 
 
 function loadSmarti() {
-	if (!RocketChat.settings.get('DBS_AI_Redlink_URL').trim()) {
+	if (!RocketChat.settings.get('DBS_AI_Smarti_URL').trim()) {
 		throw new Meteor.Error('no-smarti-url-configured');
 	}
 
 	const DBS_AI_SMARTI_URL =
-		RocketChat.settings.get('DBS_AI_Redlink_URL').endsWith('/') ?
-			RocketChat.settings.get('DBS_AI_Redlink_URL') :
-			`${ RocketChat.settings.get('DBS_AI_Redlink_URL') }/`;
+		RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
+			RocketChat.settings.get('DBS_AI_Smarti_URL') :
+			`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
 	const DBS_AI_SMARTI_WIDGET_URL = `${ DBS_AI_SMARTI_URL }plugin/v1/rocket.chat.js`;
 
 	let response = null;

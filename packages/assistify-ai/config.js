@@ -20,16 +20,22 @@ Meteor.startup(() => {
 				i18nLabel: 'DBS_AI_Source'
 			});
 
-			this.add('DBS_AI_Redlink_URL', '', {
+			this.add('DBS_AI_Smarti_URL', '', {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Redlink_URL'
+				i18nLabel: 'DBS_AI_Smarti_URL'
 			});
 
-			this.add('DBS_AI_Redlink_Hook_Token', '', {
+			this.add('DBS_AI_Smarti_Hook_Token', '', {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Redlink_Hook_Token'
+				i18nLabel: 'DBS_AI_Smarti_Hook_Token'
+			});
+
+			this.add('DBS_AI_Smarti_Auth_Token', '', {
+				type: 'string',
+				public: true,
+				i18nLabel: 'DBS_AI_Smarti_Auth_Token'
 			});
 
 			let domain = RocketChat.settings.get('Site_Url');
@@ -41,10 +47,10 @@ Meteor.startup(() => {
 					domain = domain.substr(0, domain.length - 1);
 				}
 			}
-			this.add('DBS_AI_Redlink_Domain', domain, {
+			this.add('DBS_AI_Smarti_Domain', domain, {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Redlink_Domain'
+				i18nLabel: 'DBS_AI_Smarti_Domain'
 			});
 
 			this.add('Assistify_AI_Widget_Posting_Type', '', {

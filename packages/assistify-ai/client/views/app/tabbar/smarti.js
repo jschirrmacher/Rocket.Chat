@@ -45,10 +45,10 @@ Template.AssistifySmarti.onRendered(function() {
 			}
 		} else {
 			instance.smartiLoaded.set(true);
-			const DBS_AI_Redlink_URL =
-				RocketChat.settings.get('DBS_AI_Redlink_URL').endsWith('/') ?
-					RocketChat.settings.get('DBS_AI_Redlink_URL') :
-					`${ RocketChat.settings.get('DBS_AI_Redlink_URL') }/`;
+			const DBS_AI_Smarti_URL =
+				RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
+					RocketChat.settings.get('DBS_AI_Smarti_URL') :
+					`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
 
 			const SITE_URL_W_SLASH =
 				RocketChat.settings.get('Site_Url').endsWith('/') ?
@@ -66,7 +66,7 @@ Template.AssistifySmarti.onRendered(function() {
 
 			const smartiOptions = {
 				socketEndpoint: WEBSOCKET_URL,
-				smartiEndpoint: DBS_AI_Redlink_URL,
+				smartiEndpoint: DBS_AI_Smarti_URL,
 				channel: instance.data.rid,
 				postings: {
 					type: WIDGET_POSTING_TYPE,
@@ -134,7 +134,7 @@ Template.AssistifySmarti.helpers({
 /**
  * Load Smarti script
  */
-RocketChat.settings.onload('DBS_AI_Redlink_URL', function() {
+RocketChat.settings.onload('DBS_AI_Smarti_URL', function() {
 	Meteor.call('getSmartiUiScript', function(error, script) {
 		if (error) {
 			console.error('could not load Smarti:', error.message);

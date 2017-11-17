@@ -36,13 +36,18 @@ class SmartiAdapter {
 			origin: message.origin,
 			support_area: supportArea
 		};
+		const headers = {
+			'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+			'Content-Type': 'application/json'
+		};
 
 		try {
 			const options = this.options;
 			this.options.data = requestBody;
+			this.options.headers = headers;
 			SystemLogger.debug('Smarti - trigger analysis:', JSON.stringify(options, null, 2));
 
-			const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Redlink_Domain') }`;
+			const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Smarti_Domain') }`;
 			SystemLogger.info(`Send post request: ${ URL } with options: ${ JSON.stringify(options, null, 2) }`);
 			const response = HTTP.post(URL, options);
 
@@ -62,13 +67,25 @@ class SmartiAdapter {
 		const m = RocketChat.models.LivechatExternalMessage.findOneById(room._id);
 
 		if (m) {
-			const URL = `${ this.properties.url }conversation/${ m.conversationId }/publish`;
-			SystemLogger.info(`Send post request: ${ URL }`);
-			const response = HTTP.post(URL);
-			if (response.statusCode === 200) {
-				SystemLogger.debug('Smarti - closed room successfully:', room._id, JSON.stringify(response, null, 2));
-			} else {
-				SystemLogger.error('Smarti - closing room failed:', room._id, JSON.stringify(response, null, 2));
+			const headers = {
+				'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+				'Content-Type': 'application/json'
+			};
+			try {
+				const options = this.options;
+				this.options.headers = headers;
+
+				const URL = `${ this.properties.url }conversation/${ m.conversationId }/publish`;
+				SystemLogger.info(`Send post request: ${ URL } with options: ${ JSON.stringify(options, null, 2) }`);
+				const response = HTTP.post(URL, options);
+
+				if (response.statusCode === 200) {
+					SystemLogger.debug('Smarti - closed room successfully:', room._id, JSON.stringify(response, null, 2));
+				} else {
+					SystemLogger.error('Smarti - closing room failed:', room._id, JSON.stringify(response, null, 2));
+				}
+			} catch (e) {
+				SystemLogger.error(`Smarti response for ${ URL } did not succeed:`, e);
 			}
 		} else {
 			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
@@ -100,15 +117,15 @@ export class SmartiAdapterFactory {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Redlink_URL', () => {
+		RocketChat.settings.onload('DBS_AI_Smarti_URL', () => {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Redlink_Auth_Token', () => {
+		RocketChat.settings.onload('DBS_AI_Smarti_Auth_Token', () => {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Redlink_Hook_Token', () => {
+		RocketChat.settings.onload('DBS_AI_Smarti_Hook_Token', () => {
 			factory.singleton = null;
 		});
 	}
@@ -123,21 +140,21 @@ export class SmartiAdapterFactory {
 				language: ''
 			};
 
-			const DBS_AI_Redlink_URL =
-				RocketChat.settings.get('DBS_AI_Redlink_URL').endsWith('/') ?
-					RocketChat.settings.get('DBS_AI_Redlink_URL') :
-					`${ RocketChat.settings.get('DBS_AI_Redlink_URL') }/`;
+			const DBS_AI_Smarti_URL =
+				RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
+					RocketChat.settings.get('DBS_AI_Smarti_URL') :
+					`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
 
 			const SITE_URL_W_SLASH =
 				RocketChat.settings.get('Site_Url').endsWith('/') ?
 					RocketChat.settings.get('Site_Url') :
 					`${ RocketChat.settings.get('Site_Url') }/`;
 
-			adapterProps.url = DBS_AI_Redlink_URL;
+			adapterProps.url = DBS_AI_Smarti_URL;
 
-			adapterProps.token = RocketChat.settings.get('DBS_AI_Redlink_Auth_Token');
+			adapterProps.token = RocketChat.settings.get('DBS_AI_Smarti_Auth_Token');
 
-			adapterProps.webhookUrl = `${ SITE_URL_W_SLASH }api/v1/smarti.result/${ RocketChat.settings.get('DBS_AI_Redlink_Hook_Token') }`;
+			adapterProps.webhookUrl = `${ SITE_URL_W_SLASH }api/v1/smarti.result/${ RocketChat.settings.get('DBS_AI_Smarti_Hook_Token') }`;
 
 			SystemLogger.debug(RocketChat.settings);
 
@@ -178,7 +195,7 @@ RocketChat.API.v1.addRoute('smarti.result/:token', {authRequired: false}, {
 		}));
 
 		//verify token
-		if (this.urlParams.token && this.urlParams.token === RocketChat.settings.get('DBS_AI_Redlink_Hook_Token')) {
+		if (this.urlParams.token && this.urlParams.token === RocketChat.settings.get('DBS_AI_Smarti_Hook_Token')) {
 
 			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
 			RocketChat.models.LivechatExternalMessage.update(

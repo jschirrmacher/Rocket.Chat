@@ -43,7 +43,7 @@ Meteor.startup(() => {
 			}
 			try {
 				knowledgeAdapter.onMessage(message, context, room.expertise ? [room.expertise] : []);
-			}			catch (e) {
+			} catch (e) {
 				SystemLogger.error('Error using knowledge provider ->', e);
 			}
 		});
