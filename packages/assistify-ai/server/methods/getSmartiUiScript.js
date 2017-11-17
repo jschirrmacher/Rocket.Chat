@@ -50,7 +50,7 @@ function delayedReload() {
 }
 
 /**
- * This method can be used to explicitly trigger a reconfiguration of the smart-widget
+ * This method can be used to explicitly trigger a reconfiguration of the Smarti-widget
  */
 Meteor.methods({
 	reloadSmarti() {
@@ -64,6 +64,9 @@ Meteor.methods({
 	}
 });
 
+/**
+ * This method is triggered by the client in order to retrieve the most recent widget
+ */
 Meteor.methods({
 	getSmartiUiScript() {
 		if (!script) { //buffering
