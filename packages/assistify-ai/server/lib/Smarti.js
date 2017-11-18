@@ -140,22 +140,10 @@ export class SmartiAdapterFactory {
 				language: ''
 			};
 
-			const DBS_AI_Smarti_URL =
-				RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
-					RocketChat.settings.get('DBS_AI_Smarti_URL') :
-					`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
-
-			const SITE_URL_W_SLASH =
-				RocketChat.settings.get('Site_Url').endsWith('/') ?
-					RocketChat.settings.get('Site_Url') :
-					`${ RocketChat.settings.get('Site_Url') }/`;
-
-			adapterProps.url = DBS_AI_Smarti_URL;
-
+			const ROCKET_CHAT_URL = RocketChat.settings.get('Site_Url').replace(/\/?$/, '/');
+			adapterProps.url = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
 			adapterProps.token = RocketChat.settings.get('DBS_AI_Smarti_Auth_Token');
-
-			adapterProps.webhookUrl = `${ SITE_URL_W_SLASH }api/v1/smarti.result/${ RocketChat.settings.get('DBS_AI_Smarti_Hook_Token') }`;
-
+			adapterProps.webhookUrl = `${ ROCKET_CHAT_URL }api/v1/smarti.result/${ RocketChat.settings.get('DBS_AI_Smarti_Hook_Token') }`;
 			SystemLogger.debug(RocketChat.settings);
 
 			const useMock = false;
