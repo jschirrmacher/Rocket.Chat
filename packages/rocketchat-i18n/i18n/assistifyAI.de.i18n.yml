@@ -8,7 +8,6 @@ DBS_AI_Smarti_Domain: Domäne für Nachrichten
 DBS_AI_Smarti_Hook_Token: Token für eingende Nachrichten
 DBS_AI_Smarti_URL: URL des Service
 DBS_AI_Source_APIAI: API.ai
-DBS_AI_Source_Redlink: Redlink
 DBS_AI_Source_Smarti: Smarti
 DBS_AI_Source: Wissensquelle
 error-unreachable-url: URL nicht erreichbar
