@@ -10,9 +10,7 @@ function loadSmarti() {
 	}
 
 	const DBS_AI_SMARTI_URL =
-		RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
-			RocketChat.settings.get('DBS_AI_Smarti_URL') :
-			`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
+		RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
 	const DBS_AI_SMARTI_WIDGET_URL = `${ DBS_AI_SMARTI_URL }plugin/v1/rocket.chat.js`;
 
 	let response = null;
