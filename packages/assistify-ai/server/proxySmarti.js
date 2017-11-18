@@ -1,4 +1,4 @@
-/* globals RocketChat */
+/* globals SystemLogger, RocketChat */
 
 const verbs = {
 	get: 'GET',
@@ -14,15 +14,15 @@ function propagateToSmarti(method, path, body) {
 
 	//get the target Smarti-URL, add the client secret to the header and send the request to Smarti
 	try {
-		this.logger.debug(method, 'to', URL);
-		const authheader = {
+		SystemLogger.debug(method, 'to', URL);
+		const authHeader = {
 			'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
 			'Content-Type': 'application/json'
 		};
-		return HTTP.call(method, URL, { data: body, headers: authheader });
+		return HTTP.call(method, URL, { data: body, headers: authHeader });
 	} catch (error) {
-		this.logger.error('Could not complete', method, 'to', URL);
-		this.logger.debug(error);
+		SystemLogger.error('Could not complete', method, 'to', URL);
+		SystemLogger.debug(error);
 		return false;
 	}
 }
@@ -45,28 +45,50 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation', {authRequired: true}
 	}
 });
 
-RocketChat.API.v1.addRoute('assistify/smarti/conversation/:id', {authRequired: true}, {
+RocketChat.API.v1.addRoute('assistify/smarti/conversation/:_id', {authRequired: true}, {
 	get() {
-		const response = propagateToSmarti(verbs.get, `conversation/${ this.urlParams.id }`, this.bodyParams);
-		return RocketChat.API.v1.success(response.data);
+		if (!RocketChat.authz.hasPermission(this.userId, 'send-many-messages')) {
+			return RocketChat.API.v1.unauthorized();
+		}
+		try {
+			check(this.urlParams, {
+				_id: String
+			});
+			const response = propagateToSmarti(verbs.get, `conversation/${ this.urlParams._id }`, this.bodyParams);
+			return RocketChat.API.v1.success(response.data);
+		} catch (e) {
+			return RocketChat.API.v1.failure(e.error);
+		}
 	},
 
 	post() {
-		this.logger.debug(this.urlParams.id);
+		SystemLogger.debug(this.urlParams.id);
 	}
 });
 
 RocketChat.API.v1.addRoute('assistify/smarti/conversation/:_id/template/:_index/:_queryBuilder', {authRequired: true}, {
 	get() {
-		let queryP = '?';
-		for (const key in this.queryParams) {
-			if (this.queryParams.hasOwnProperty(key)) {
-				queryP += `&${ key }=${ this.queryParams[key] }`;
-			}
+		if (!RocketChat.authz.hasPermission(this.userId, 'send-many-messages')) {
+			return RocketChat.API.v1.unauthorized();
 		}
-		const reqURL = `conversation/${ this.urlParams._id }/template/${ this.urlParams._index }/${ this.urlParams._queryBuilder }${ queryP }`;
-		const response = propagateToSmarti(verbs.get, reqURL, this.bodyParams);
-		return RocketChat.API.v1.success(response.data);
+		try {
+			check(this.urlParams, {
+				_id: String,
+				_index: String,
+				_queryBuilder: String
+			});
+			let queryP = '?';
+			for (const key in this.queryParams) {
+				if (this.queryParams.hasOwnProperty(key)) {
+					queryP += `&${ key }=${ this.queryParams[key] }`;
+				}
+			}
+			const reqURL = `conversation/${ this.urlParams._id }/template/${ this.urlParams._index }/${ this.urlParams._queryBuilder }${ queryP }`;
+			const response = propagateToSmarti(verbs.get, reqURL, this.bodyParams);
+			return RocketChat.API.v1.success(response.data);
+		} catch (e) {
+			return RocketChat.API.v1.failure(e.error);
+		}
 	}
 });
 
