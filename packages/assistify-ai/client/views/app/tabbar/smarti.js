@@ -50,7 +50,7 @@ Template.AssistifySmarti.onRendered(function() {
 			// stripping only the protocol ("http") from the site-url either creates a secure or an insecure websocket connection
 			const WEBSOCKET_URL = `ws${ ROCKET_CHAT_URL.substring(4) }websocket/`;
 			const WIDGET_POSTING_TYPE = RocketChat.settings.get('Assistify_AI_Widget_Posting_Type') || 'postRichText';
-			const SMARTI_API_PROXY = `${ ROCKET_CHAT_URL}api/v1/assistify/smarti/`;
+			const SMARTI_API_PROXY = `${ ROCKET_CHAT_URL }api/v1/assistify/smarti/`;
 			const smartiOptions = {
 				socketEndpoint: WEBSOCKET_URL,
 				smartiEndpoint: SMARTI_URL,
@@ -63,7 +63,7 @@ Template.AssistifySmarti.onRendered(function() {
 				},
 				widget: {
 					'query.dbsearch': {
-						numOfRows: 2,
+						numOfRows: 2
 					},
 					'query.dbsearch.keyword': {
 						numOfRows: 2,
