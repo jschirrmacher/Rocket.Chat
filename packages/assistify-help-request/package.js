@@ -68,7 +68,6 @@ Package.onUse(function(api) {
 	api.addFiles('client/views/creationDialog/AssistifyCreateRequest.js', 'client');
 	api.addFiles('client/views/creationDialog/AssistifyCreateExpertise.html', 'client');
 	api.addFiles('client/views/creationDialog/AssistifyCreateExpertise.js', 'client');
-	api.addFiles('client/views/creationDialog/AssistifyCreateInputError.html', 'client');
 	api.addFiles('client/views/sideNav/requests.html', 'client');
 	api.addFiles('client/views/sideNav/requests.js', 'client');
 	api.addFiles('client/views/sideNav/expertise.html', 'client');
