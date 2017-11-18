@@ -45,28 +45,17 @@ Template.AssistifySmarti.onRendered(function() {
 			}
 		} else {
 			instance.smartiLoaded.set(true);
-			const DBS_AI_Smarti_URL =
-				RocketChat.settings.get('DBS_AI_Smarti_URL').endsWith('/') ?
-					RocketChat.settings.get('DBS_AI_Smarti_URL') :
-					`${ RocketChat.settings.get('DBS_AI_Smarti_URL') }/`;
-
-			const SITE_URL_W_SLASH =
-				RocketChat.settings.get('Site_Url').endsWith('/') ?
-					RocketChat.settings.get('Site_Url') :
-					`${ RocketChat.settings.get('Site_Url') }/`;
-
+			const SMARTI_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
+			const ROCKET_CHAT_URL = RocketChat.settings.get('Site_Url').replace(/\/?$/, '/');
 			// stripping only the protocol ("http") from the site-url either creates a secure or an insecure websocket connection
-			const WEBSOCKET_URL = `ws${ SITE_URL_W_SLASH.substring(4) }websocket/`;
-
-			let customSuffix = RocketChat.settings.get('Assistify_AI_DBSearch_Suffix') || '';
-			customSuffix = customSuffix.replace(/\r\n|\r|\n/g, '');
-
+			const WEBSOCKET_URL = `ws${ ROCKET_CHAT_URL.substring(4) }websocket/`;
 			const WIDGET_POSTING_TYPE = RocketChat.settings.get('Assistify_AI_Widget_Posting_Type') || 'postRichText';
-			console.log(WIDGET_POSTING_TYPE, RocketChat.settings.get('Assistify_AI_Widget_Posting_Type'));
-
+			const SMARTI_API_PROXY = `${ ROCKET_CHAT_URL}api/v1/assistify/smarti/`;
 			const smartiOptions = {
 				socketEndpoint: WEBSOCKET_URL,
-				smartiEndpoint: DBS_AI_Smarti_URL,
+				smartiEndpoint: SMARTI_URL,
+				rocketBaseurl: ROCKET_CHAT_URL,
+				smartiApiProxy: SMARTI_API_PROXY,
 				channel: instance.data.rid,
 				postings: {
 					type: WIDGET_POSTING_TYPE,
@@ -75,16 +64,15 @@ Template.AssistifySmarti.onRendered(function() {
 				widget: {
 					'query.dbsearch': {
 						numOfRows: 2,
-						suffix: customSuffix
 					},
 					'query.dbsearch.keyword': {
 						numOfRows: 2,
-						suffix: customSuffix,
 						disabled: true
 					}
 				},
 				lang: 'de'
 			};
+			console.debug('Initializing Smarti with options: ', JSON.stringify(smartiOptions, null, 2));
 			instance.smarti = new window.SmartiWidget(instance.find('.smarti-widget'), smartiOptions);
 		}
 	}

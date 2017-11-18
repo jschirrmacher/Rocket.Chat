@@ -9,27 +9,17 @@ const verbs = {
 
 function propagateToSmarti(method, path, body) {
 
-	const URL = `${ RocketChat.settings.get('DBS_AI_Redlink_URL') }/${ path }`;
+	const SMARTI_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
+	const URL = `${ SMARTI_URL }${ path }`;
 
 	//get the target Smarti-URL, add the client secret to the header and send the request to Smarti
 	try {
 		this.logger.debug(method, 'to', URL);
-		const response = HTTP.call(method,
-			URL,
-			{
-				//content?:string;
-				// data? : any;
-				// query ? : string;
-				// params ? : any;
-				// auth ? : string;
-				// headers ? : any;
-				// timeout ? : Number;
-				// followRedirects ? : boolean;
-				// npmRequestOptions ? : any;
-				// beforeSend ? : Function
-			});
-		this.logger.debug('Successfully requested', method, 'with body', body, 'to', URL, 'got', JSON.stringify(response));
-		return true;
+		const authheader = {
+			'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+			'Content-Type': 'application/json'
+		};
+		return HTTP.call(method, URL, { data: body, headers: authheader });
 	} catch (error) {
 		this.logger.error('Could not complete', method, 'to', URL);
 		this.logger.debug(error);
@@ -57,11 +47,26 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation', {authRequired: true}
 
 RocketChat.API.v1.addRoute('assistify/smarti/conversation/:id', {authRequired: true}, {
 	get() {
-		this.logger.debug(this.urlParams.id);
+		const response = propagateToSmarti(verbs.get, `conversation/${ this.urlParams.id }`, this.bodyParams);
+		return RocketChat.API.v1.success(response.data);
 	},
 
 	post() {
 		this.logger.debug(this.urlParams.id);
+	}
+});
+
+RocketChat.API.v1.addRoute('assistify/smarti/conversation/:_id/template/:_index/:_queryBuilder', {authRequired: false}, {
+	get() {
+		let queryP = '?';
+		for (const key in this.queryParams) {
+			if (this.queryParams.hasOwnProperty(key)) {
+				queryP += `&${ key }=${ this.queryParams[key] }`;
+			}
+		}
+		const reqURL = `conversation/${ this.urlParams._id }/template/${ this.urlParams._index }/${ this.urlParams._queryBuilder }${ queryP }`;
+		const response = propagateToSmarti(verbs.get, reqURL, this.bodyParams);
+		return RocketChat.API.v1.success(response.data);
 	}
 });
 
