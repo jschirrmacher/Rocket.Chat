@@ -257,6 +257,9 @@ Template.AssistifyCreateRequest.onCreated(function() {
 	instance.delaySetExpertise = _.debounce((expertise) => {
 		instance.expertise.set(expertise);
 	}, 200);
+	instance.delaySetError = _.debounce((error) => {
+		instance.error.set(error);
+	}, 400);
 
 	// instance.clearForm = function() {
 	// 	instance.requestRoomName.set('');
