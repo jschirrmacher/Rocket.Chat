@@ -19,6 +19,10 @@ const label = function() {
 // });
 
 Template.adminFlex.helpers({
+	hasSettingPermission() {
+		return RocketChat.authz.hasAtLeastOnePermission(['view-privileged-setting', 'manage-selected-settings']);
+	},
+
 	groups() {
 		const filter = Template.instance().settingsFilter.get();
 		const query = {
