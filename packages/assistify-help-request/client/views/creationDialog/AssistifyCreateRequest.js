@@ -84,10 +84,10 @@ Template.AssistifyCreateRequest.events({
 	},
 	'input #request_title'(e, t) {
 		const input = e.target;
+		t.requestTitle.set(input.value);
 		if (!input.value) {
 			t.titleError.set('');
 		} else {
-			t.requestTitle.set(input.value);
 			t.debounceValidateRequestName(input.value);
 		}
 
