@@ -5,7 +5,7 @@
 	</header>
 	<form class="create-channel__content">
 		<div class="create-channel__inputs">
-			<div class="rc-input">
+			<div class="rc-input {{#if expertiseError}} rc-input--error {{/if}}">
 				<label class="rc-input__label">
 					<div class="rc-input__title">{{_ "Expertise"}}</div>
 					<div class="rc-input__wrapper">
