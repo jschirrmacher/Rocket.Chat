@@ -19,9 +19,9 @@
 					</div>
 					{{#unless autocomplete 'isShowing'}}
 						{{#if expertise}}
-							{{#unless validExpertise}}
-								{{> AssistifyCreateInputError text="Expertise_does_not_exist"}}
-							{{/unless}}
+							{{#if expertiseError}}
+								{{> AssistifyCreateInputError text=expertiseError}}
+							{{/if}}
 						{{/if}}
 					{{/unless}}
 					{{#with config}}
@@ -35,7 +35,7 @@
 					{{/with}}
 				</label>
 			</div>
-			<div class="rc-input {{#if requestTitleError}}rc-input--error{{/if}}">
+			<div class="rc-input {{#if titleError}}rc-input--error{{/if}}">
 				<label class="rc-input__label">
 					<div class="rc-input__title">{{_ "Title"}}</div>
 					<div class="rc-input__wrapper">
@@ -48,11 +48,8 @@
 							   placeholder={{_ "New_request_title"}} autocomplete="off">
 					</div>
 				</label>
-				{{#if requestTitleInUse}}
-					{{> AssistifyCreateInputError text="Request_already_exists"}}
-				{{/if}}
-				{{#if invalidTitle}}
-					{{> AssistifyCreateInputError text="Request_no_special_char"}}
+				{{#if titleError}}
+					{{> AssistifyCreateInputError text=titleError}}
 				{{/if}}
 			</div>
 			<div class="rc-input">
