@@ -1135,6 +1135,7 @@
   "Message_AllowDeleting": "Löschen von Nachrichten erlauben",
   "Message_AllowDeleting_BlockDeleteInMinutes": "Löschen von Nachrichten nach (n) Minuten sperren",
   "Message_AllowDeleting_BlockDeleteInMinutes_Description": "Geben Sie 0 ein, um keine Sperre zu setzen",
+  "Message_AllowDirectMessagesToYourself": "Selbstgespräche erlauben",
   "Message_AllowEditing": "Die Bearbeitung von Nachrichten erlauben",
   "Message_AllowEditing_BlockEditInMinutes": "Bearbeiten von Nachrichten nach (n) Minuten sperren",
   "Message_AllowEditing_BlockEditInMinutesDescription": "Geben Sie eine 0 ein, um das Bearbeiten von Nachrichten jederzeit zu erlauben.",

@@ -13,5 +13,6 @@ Package.onUse(function(api) {
 	api.use('rocketchat:authorization');
 	api.use('assistify:help-request');
 	api.use('assistify:ai');
-	api.use('assistify:bot');
+
+	api.addFiles('server/roles.js', 'server');
 });

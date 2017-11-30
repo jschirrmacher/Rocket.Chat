@@ -29,7 +29,8 @@ Template.permissions.helpers({
 		{
 			sort: { //sorting seems not to be copied from the publication, we need to request it explicitly in find()
 				group: 1,
-				section: 1
+				section: 1,
+				sorter: 1
 			}
 		}).fetch()
 			.filter((setting) => setting.group); //group permissions are assigned implicitly,  we can hide them. $exists: {group:false} not supported by Minimongo
