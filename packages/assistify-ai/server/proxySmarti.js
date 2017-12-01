@@ -9,14 +9,14 @@ const verbs = {
 
 function propagateToSmarti(method, path, body) {
 
-	const SMARTI_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
-	const URL = `${ SMARTI_URL }${ path }`;
+	const Assistify_AI_Smarti_Base_URL = RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').replace(/\/?$/, '/');
+	const URL = `${ Assistify_AI_Smarti_Base_URL }${ path }`;
 
 	//get the target Smarti-URL, add the client secret to the header and send the request to Smarti
 	try {
 		SystemLogger.debug(method, 'to', URL);
 		const authHeader = {
-			'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+			'X-Auth-Token': RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token'),
 			'Content-Type': 'application/json'
 		};
 		return HTTP.call(method, URL, { data: body, headers: authHeader });

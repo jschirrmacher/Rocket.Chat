@@ -45,7 +45,7 @@ Template.AssistifySmarti.onRendered(function() {
 			}
 		} else {
 			instance.smartiLoaded.set(true);
-			const SMARTI_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
+			const SMARTI_URL = RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').replace(/\/?$/, '/');
 			const ROCKET_CHAT_URL = RocketChat.settings.get('Site_Url').replace(/\/?$/, '/');
 			// stripping only the protocol ("http") from the site-url either creates a secure or an insecure websocket connection
 			const WEBSOCKET_URL = `ws${ ROCKET_CHAT_URL.substring(4) }websocket/`;
@@ -60,15 +60,6 @@ Template.AssistifySmarti.onRendered(function() {
 				postings: {
 					type: WIDGET_POSTING_TYPE,
 					cssInputSelector: '.rc-message-box .js-input-message'
-				},
-				widget: {
-					'query.dbsearch': {
-						numOfRows: 2
-					},
-					'query.dbsearch.keyword': {
-						numOfRows: 2,
-						disabled: true
-					}
 				},
 				lang: 'de'
 			};
@@ -122,7 +113,7 @@ Template.AssistifySmarti.helpers({
 /**
  * Load Smarti script
  */
-RocketChat.settings.onload('DBS_AI_Smarti_URL', function() {
+RocketChat.settings.onload('Assistify_AI_Smarti_Base_URL', function() {
 	Meteor.call('getSmartiUiScript', function(error, script) {
 		if (error) {
 			console.error('could not load Smarti:', error.message);

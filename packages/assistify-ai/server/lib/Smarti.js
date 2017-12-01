@@ -37,7 +37,7 @@ class SmartiAdapter {
 			support_area: supportArea
 		};
 		const headers = {
-			'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+			'X-Auth-Token': RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token'),
 			'Content-Type': 'application/json'
 		};
 
@@ -47,7 +47,7 @@ class SmartiAdapter {
 			this.options.headers = headers;
 			SystemLogger.debug('Smarti - trigger analysis:', JSON.stringify(options, null, 2));
 
-			const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('DBS_AI_Smarti_Domain') }`;
+			const URL = `${ this.properties.url }rocket/${ RocketChat.settings.get('Assistify_AI_Smarti_Domain') }`;
 			SystemLogger.info(`Send post request: ${ URL } with options: ${ JSON.stringify(options, null, 2) }`);
 			const response = HTTP.post(URL, options);
 
@@ -68,7 +68,7 @@ class SmartiAdapter {
 
 		if (m) {
 			const headers = {
-				'X-Auth-Token': RocketChat.settings.get('DBS_AI_Smarti_Auth_Token'),
+				'X-Auth-Token': RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token'),
 				'Content-Type': 'application/json'
 			};
 			try {
@@ -113,19 +113,19 @@ export class SmartiAdapterFactory {
 		 */
 		//todo: validate it works
 		const factory = this;
-		RocketChat.settings.onload('DBS_AI_Source', () => {
+		RocketChat.settings.onload('Assistify_AI_Source', () => {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Smarti_URL', () => {
+		RocketChat.settings.onload('Assistify_AI_Smarti_Base_URL', () => {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Smarti_Auth_Token', () => {
+		RocketChat.settings.onload('Assistify_AI_Smarti_Auth_Token', () => {
 			factory.singleton = null;
 		});
 
-		RocketChat.settings.onload('DBS_AI_Smarti_Hook_Token', () => {
+		RocketChat.settings.onload('Assistify_AI_Smarti_Hook_Token', () => {
 			factory.singleton = null;
 		});
 	}
@@ -141,9 +141,9 @@ export class SmartiAdapterFactory {
 			};
 
 			const ROCKET_CHAT_URL = RocketChat.settings.get('Site_Url').replace(/\/?$/, '/');
-			adapterProps.url = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
-			adapterProps.token = RocketChat.settings.get('DBS_AI_Smarti_Auth_Token');
-			adapterProps.webhookUrl = `${ ROCKET_CHAT_URL }api/v1/smarti.result/${ RocketChat.settings.get('DBS_AI_Smarti_Hook_Token') }`;
+			adapterProps.url = RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').replace(/\/?$/, '/');
+			adapterProps.token = RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token');
+			adapterProps.webhookUrl = `${ ROCKET_CHAT_URL }api/v1/smarti.result/${ RocketChat.settings.get('Assistify_AI_Smarti_Hook_Token') }`;
 			SystemLogger.debug(RocketChat.settings);
 
 			const useMock = false;
@@ -183,7 +183,7 @@ RocketChat.API.v1.addRoute('smarti.result/:token', {authRequired: false}, {
 		}));
 
 		//verify token
-		if (this.urlParams.token && this.urlParams.token === RocketChat.settings.get('DBS_AI_Smarti_Hook_Token')) {
+		if (this.urlParams.token && this.urlParams.token === RocketChat.settings.get('Assistify_AI_Smarti_Hook_Token')) {
 
 			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
 			RocketChat.models.LivechatExternalMessage.update(

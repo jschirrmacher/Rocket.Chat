@@ -5,20 +5,19 @@ let timeoutHandle;
 
 
 function loadSmarti() {
-	if (!RocketChat.settings.get('DBS_AI_Smarti_URL').trim()) {
+	if (!RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').trim()) {
 		throw new Meteor.Error('no-smarti-url-configured');
 	}
 
-	const DBS_AI_SMARTI_URL =
-		RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
-	const DBS_AI_SMARTI_WIDGET_URL = `${ DBS_AI_SMARTI_URL }plugin/v1/rocket.chat.js`;
+	const Assistify_AI_Smarti_Base_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
+	const Assistify_AI_Smarti_Widget_URL = `${ Assistify_AI_Smarti_Base_URL }plugin/v1/rocket.chat.js`;
 
 	let response = null;
 	try {
-		SystemLogger.debug('Trying to retrieve Smarti-Widget script from', DBS_AI_SMARTI_WIDGET_URL);
-		response = HTTP.get(DBS_AI_SMARTI_WIDGET_URL);
+		SystemLogger.debug('Trying to retrieve Smarti-Widget script from', Assistify_AI_Smarti_Widget_URL);
+		response = HTTP.get(Assistify_AI_Smarti_Widget_URL);
 	} catch (error) {
-		SystemLogger.error('Could not load the Smarti-Widget script at', DBS_AI_SMARTI_URL);
+		SystemLogger.error('Could not load the Smarti-Widget script at', Assistify_AI_Smarti_Widget_URL);
 		SystemLogger.debug(error);
 		throw new Meteor.Error('error-unreachable-url');
 	}
@@ -34,7 +33,7 @@ function loadSmarti() {
 			script = `${ script } //# sourceURL=SmartiWidget.js`;
 		}
 	} else {
-		SystemLogger.error('Could not load Smarti script from', DBS_AI_SMARTI_URL);
+		SystemLogger.error('Could not load Smarti script from', Assistify_AI_Smarti_Base_URL);
 		throw new Meteor.Error('no-smarti-ui-script', 'no-smarti-ui-script');
 	}
 

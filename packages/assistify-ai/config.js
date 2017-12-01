@@ -3,38 +3,38 @@ Meteor.startup(() => {
 
 		this.section('Knowledge_Base', function() {
 
-			this.add('DBS_AI_Enabled', false, {
+			this.add('Assistify_AI_Enabled', false, {
 				type: 'boolean',
 				public: true,
 				i18nLabel: 'Enabled'
 			});
 
-			this.add('DBS_AI_Source', '', {
+			this.add('Assistify_AI_Source', '', {
 				type: 'select',
 				values: [
-					{key: '0', i18nLabel: 'DBS_AI_Source_APIAI'},
-					{key: '1', i18nLabel: 'DBS_AI_Source_Smarti'}
+					{key: '0', i18nLabel: 'Assistify_AI_Source_APIAI'},
+					{key: '1', i18nLabel: 'Assistify_AI_Source_Smarti'}
 				],
 				public: true,
-				i18nLabel: 'DBS_AI_Source'
+				i18nLabel: 'Assistify_AI_Source'
 			});
 
-			this.add('DBS_AI_Smarti_URL', '', {
+			this.add('Assistify_AI_Smarti_Base_URL', '', {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Smarti_URL'
+				i18nLabel: 'Assistify_AI_Smarti_Base_URL'
 			});
 
-			this.add('DBS_AI_Smarti_Hook_Token', '', {
+			this.add('Assistify_AI_Smarti_Hook_Token', '', {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Smarti_Hook_Token'
+				i18nLabel: 'Assistify_AI_Smarti_Hook_Token'
 			});
 
-			this.add('DBS_AI_Smarti_Auth_Token', '', {
+			this.add('Assistify_AI_Smarti_Auth_Token', '', {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Smarti_Auth_Token'
+				i18nLabel: 'Assistify_AI_Smarti_Auth_Token'
 			});
 
 			let domain = RocketChat.settings.get('Site_Url');
@@ -46,10 +46,10 @@ Meteor.startup(() => {
 					domain = domain.substr(0, domain.length - 1);
 				}
 			}
-			this.add('DBS_AI_Smarti_Domain', domain, {
+			this.add('Assistify_AI_Smarti_Domain', domain, {
 				type: 'string',
 				public: true,
-				i18nLabel: 'DBS_AI_Smarti_Domain'
+				i18nLabel: 'Assistify_AI_Smarti_Domain'
 			});
 
 			this.add('Assistify_AI_Widget_Posting_Type', '', {

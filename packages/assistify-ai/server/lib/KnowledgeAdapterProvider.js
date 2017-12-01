@@ -9,7 +9,7 @@ export function getKnowledgeAdapter() {
 	const KNOWLEDGE_SRC_APIAI = '0';
 	const KNOWLEDGE_SRC_SMARTI = '1';
 
-	RocketChat.settings.get('DBS_AI_Source', function(key, value) {
+	RocketChat.settings.get('Assistify_AI_Source', function(key, value) {
 		knowledgeSource = value;
 	});
 
