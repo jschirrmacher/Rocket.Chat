@@ -14,5 +14,6 @@ Package.onUse(function(api) {
 	api.use('assistify:help-request');
 	api.use('assistify:ai');
 
+	api.addFiles('server/config.js', 'server');
 	api.addFiles('server/roles.js', 'server');
 });
