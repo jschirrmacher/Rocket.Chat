@@ -3,8 +3,8 @@
 
 ### Enhancements
 - You can add a title and the actual question to the request while creating it
+- The request creation screen allows to pass url-parameters. This enables a very loosely coupled integration, e. g. into a [confluence-based wiki](https://github.com/assistify/confluence-integration)
 - Roles can be authorized to change particular settings only. This allows you to customize Assistify with respect to colors, texts and more - given you've got the `config-expert` role!
-- The request creation screen allows to pass url-parameters. This allow for a very loosely coupled integration, e. g. into a [confluence-based wiki](https://github.com/assistify/confluence-integration)
 - :de: Wir kennen euch nun besser. Wir wollen ab jetzt “Du” zu einander sagen, ok? 😉 :de:
 
 
