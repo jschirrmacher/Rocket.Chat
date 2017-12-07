@@ -9,7 +9,7 @@ function loadSmarti() {
 		throw new Meteor.Error('no-smarti-url-configured');
 	}
 
-	const Assistify_AI_Smarti_Base_URL = RocketChat.settings.get('DBS_AI_Smarti_URL').replace(/\/?$/, '/');
+	const Assistify_AI_Smarti_Base_URL = RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').replace(/\/?$/, '/');
 	const Assistify_AI_Smarti_Widget_URL = `${ Assistify_AI_Smarti_Base_URL }plugin/v1/rocket.chat.js`;
 
 	let response = null;
