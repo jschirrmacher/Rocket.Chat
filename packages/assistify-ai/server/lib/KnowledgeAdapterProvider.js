@@ -1,13 +1,13 @@
 /* globals RocketChat */
 
-import {SmartiAdapterFactory} from './Smarti';
+import {SmartiAdapterFactory} from './SmartiAdapter';
 import {ApiAiAdapter} from './AiApiAdapter';
 
 export function getKnowledgeAdapter() {
 	let knowledgeSource = '';
 
-	const KNOWLEDGE_SRC_APIAI = '0';
-	const KNOWLEDGE_SRC_SMARTI = '1';
+	const KNOWLEDGE_SRC_SMARTI = '0';
+	const KNOWLEDGE_SRC_APIAI = '1';
 
 	RocketChat.settings.get('Assistify_AI_Source', function(key, value) {
 		knowledgeSource = value;
@@ -29,7 +29,6 @@ export function getKnowledgeAdapter() {
 			RocketChat.settings.get('Assistify_AI_Apiai_Language', function(key, value) {
 				adapterProps.language = value;
 			});
-
 			return new ApiAiAdapter(adapterProps);
 		case KNOWLEDGE_SRC_SMARTI:
 			return SmartiAdapterFactory.getInstance(); // buffering done inside the factory method

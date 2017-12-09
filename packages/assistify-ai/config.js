@@ -12,29 +12,22 @@ Meteor.startup(() => {
 			this.add('Assistify_AI_Source', '', {
 				type: 'select',
 				values: [
-					{key: '0', i18nLabel: 'Assistify_AI_Source_APIAI'},
-					{key: '1', i18nLabel: 'Assistify_AI_Source_Smarti'}
+					{key: '0', i18nLabel: 'Assistify_AI_Source_Smarti'},
+					{key: '1', i18nLabel: 'Assistify_AI_Source_APIAI'}
 				],
 				public: true,
 				i18nLabel: 'Assistify_AI_Source'
+			});
+
+			this.add('Assistify_AI_Reload', 'reloadSmarti', {
+				type: 'action',
+				actionText: 'Reload_Settings'
 			});
 
 			this.add('Assistify_AI_Smarti_Base_URL', '', {
 				type: 'string',
 				public: true,
 				i18nLabel: 'Assistify_AI_Smarti_Base_URL'
-			});
-
-			this.add('Assistify_AI_Smarti_Hook_Token', '', {
-				type: 'string',
-				public: true,
-				i18nLabel: 'Assistify_AI_Smarti_Hook_Token'
-			});
-
-			this.add('Assistify_AI_Smarti_Auth_Token', '', {
-				type: 'string',
-				public: true,
-				i18nLabel: 'Assistify_AI_Smarti_Auth_Token'
 			});
 
 			let domain = RocketChat.settings.get('Site_Url');
@@ -52,6 +45,12 @@ Meteor.startup(() => {
 				i18nLabel: 'Assistify_AI_Smarti_Domain'
 			});
 
+			this.add('Assistify_AI_Smarti_Auth_Token', '', {
+				type: 'string',
+				public: true,
+				i18nLabel: 'Assistify_AI_Smarti_Auth_Token'
+			});
+
 			this.add('Assistify_AI_Widget_Posting_Type', '', {
 				type: 'select',
 				values: [
@@ -63,9 +62,10 @@ Meteor.startup(() => {
 				i18nLabel: 'Assistify_AI_Widget_Posting_Type'
 			});
 
-			this.add('reload_Assistify', 'reloadSmarti', {
-				type: 'action',
-				actionText: 'Reload_Settings'
+			this.add('Assistify_AI_RocketChat_Webhook_Token', '', {
+				type: 'string',
+				public: true,
+				i18nLabel: 'Assistify_AI_RocketChat_Webhook_Token'
 			});
 		});
 	};

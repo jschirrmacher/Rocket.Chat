@@ -1,5 +1,7 @@
 /* globals SystemLogger */
 
+import { SmartiAdapterFactory } from '../lib/SmartiAdapter';
+
 let script;
 let timeoutHandle;
 
@@ -53,6 +55,7 @@ Meteor.methods({
 	reloadSmarti() {
 		script = undefined;
 		loadSmarti();
+		SmartiAdapterFactory.getInstance(true);
 		delayedReload();
 
 		return {
