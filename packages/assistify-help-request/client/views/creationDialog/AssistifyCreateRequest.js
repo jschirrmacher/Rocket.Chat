@@ -3,10 +3,16 @@ import {RocketChat} from 'meteor/rocketchat:lib';
 import {FlowRouter} from 'meteor/kadira:flow-router';
 import {ReactiveVar} from 'meteor/reactive-var';
 
+const WordCloud = require('meteor/overture8:wordcloud2');
+
 const acEvents = {
 	'click .rc-popup-list__item'(e, t) {
 		t.ac.onItemClick(this, e);
 		t.debounceValidateExpertise(this.item.name);
+	},
+	'click #more-topics'(e, t) {
+		e.preventDefault();
+		t.topicSearch.set(true);
 	},
 	'keydown [name="expertise"]'(e, t) {
 		t.ac.onKeyDown(e);
@@ -38,7 +44,7 @@ Template.AssistifyCreateRequest.helpers({
 		return {
 			filter: filter.get(),
 			template_item: 'AssistifyCreateRequestAutocomplete',
-			noMatchTemplate: 'userSearchEmpty',
+			noMatchTemplate: 'AssistifytopicSearchEmpty',
 			modifier(text) {
 				const f = filter.get();
 				return `#${ f.length === 0 ? text : text.replace(new RegExp(filter.get()), function(part) {
@@ -67,7 +73,35 @@ Template.AssistifyCreateRequest.helpers({
 	titleError() {
 		const instance = Template.instance();
 		return instance.titleError.get();
+	},
+	topicSearch() {
+		const instance = Template.instance();
+		if (window.WordCloud.isSupported !== true) {
+			instance.topicSearch.set('');
+		}
+		return instance.topicSearch.get();
+	},
+	topics() {
+		return function(topics) {
+			RocketChat.models.Rooms.find({t: 'e'},
+				{
+					sort: { ts: 1 }
+				}).fetch().forEach(function(room) {
+				topics.push(room.fname);
+			});
+		};
+	},
+	setExpertise() {
+		const instance = Template.instance();
+		return function(selectedExpertise) {
+			instance.expertise.set(selectedExpertise);
+			if (selectedExpertise) {
+				instance.debounceValidateExpertise(selectedExpertise);
+				instance.topicSearch.set(''); //Search completed.
+			}
+		};
 	}
+
 });
 
 
@@ -77,8 +111,7 @@ Template.AssistifyCreateRequest.events({
 		const input = e.target;
 		const position = input.selectionEnd || input.selectionStart;
 		const length = input.value.length;
-		document.activeElement === input && e && /input/i.test(e.type) && (input.selectionEnd = position + input.value.length - length);
-		t.expertise.set(input.value);
+		document.activeElement === input && e && /input/i.test(e.type) && (input.selectionEnd = position + input.value.length - length);t.expertise.set(input.value);
 		t.validExpertise.set(false);
 		t.expertiseError.set('');
 	},
@@ -90,7 +123,6 @@ Template.AssistifyCreateRequest.events({
 		} else {
 			t.debounceValidateRequestName(input.value);
 		}
-
 	},
 	'input #first_question'(e, t) {
 		const input = e.target;
@@ -154,13 +186,13 @@ Template.AssistifyCreateRequest.onRendered(function() {
 
 Template.AssistifyCreateRequest.onCreated(function() {
 	const instance = this;
-
 	instance.expertise = new ReactiveVar(''); //the value of the text field
 	instance.validExpertise = new ReactiveVar(false);
 	instance.expertiseError = new ReactiveVar(null);
 	instance.titleError = new ReactiveVar(null);
 	instance.requestTitle = new ReactiveVar('');
 	instance.openingQuestion = new ReactiveVar('');
+	instance.topicSearch = new ReactiveVar('');
 
 	instance.debounceValidateExpertise = _.debounce((expertise) => {
 		if (!expertise) {
