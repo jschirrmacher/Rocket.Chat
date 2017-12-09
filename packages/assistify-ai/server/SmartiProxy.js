@@ -22,26 +22,13 @@ export const verbs = {
 export function propagateToSmarti(method, path, body) {
 
 	const adapterProperties = SmartiAdapterFactory.getInstance().properties;
-
+	const header = {
+		'X-Auth-Token': adapterProperties.smartiAuthToken,
+		'Content-Type': 'application/json; charset=utf-8'
+	};
 	try {
-		// limitFunction returns the given function e.g. 'HTTP.call' back
-		// the parameters can be applied later
-		const request = RocketChat.RateLimiter.limitFunction(
-			HTTP.call, 5, 1000, {
-				userId(userId) {
-					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-				}
-			}
-		);
-
-		const header = {
-			'X-Auth-Token': adapterProperties.smartiAuthToken,
-			'Content-Type': 'application/json; charset=utf-8'
-		};
-		const response = request(method, `${ adapterProperties.smartiUrl }${ path }`, {data: body, headers: header});
-
+		const response = HTTP.call(method, `${ adapterProperties.smartiUrl }${ path }`, {data: body, headers: header});
 		return RocketChat.API.v1.success(response.data);
-
 	} catch (error) {
 		SystemLogger.error('Could not complete', method, 'to', URL);
 		SystemLogger.debug(error);
@@ -57,7 +44,14 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation/:_id', {authRequired: 
 		check(this.urlParams, {
 			_id: String
 		});
-		return propagateToSmarti(verbs.get, `conversation/${ this.urlParams._id }`);
+		const propagate = RocketChat.RateLimiter.limitFunction(
+			propagateToSmarti, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		);
+		return propagate(verbs.get, `conversation/${ this.urlParams._id }`);
 	}
 });
 
@@ -77,8 +71,14 @@ RocketChat.API.v1.addRoute('assistify/smarti/conversation/:_id/template/:_index/
 				queryP += `&${ key }=${ this.queryParams[key] }`;
 			}
 		}
-		const url = `conversation/${ this.urlParams._id }/template/${ this.urlParams._index }/${ this.urlParams._queryBuilder }${ queryP }`;
-		return propagateToSmarti(verbs.get, url);
+		const propagate = RocketChat.RateLimiter.limitFunction(
+			propagateToSmarti, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		);
+		return propagate(verbs.get, `conversation/${ this.urlParams._id }/template/${ this.urlParams._index }/${ this.urlParams._queryBuilder }${ queryP }`);
 	}
 });
 

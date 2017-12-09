@@ -24,14 +24,28 @@ class SmartiAdapter {
 			origin: message.origin,
 			support_area: supportArea
 		};
-		return propagateToSmarti(verbs.post, `rocket/${ this.properties.smartiKnowledgeDomain }`, requestBody);
+		const propagate = RocketChat.RateLimiter.limitFunction(
+			propagateToSmarti, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		);
+		return propagate(verbs.post, `rocket/${ this.properties.smartiKnowledgeDomain }`, requestBody);
 	}
 
 	onClose(room) { //async
 		// get conversation id
 		const m = RocketChat.models.LivechatExternalMessage.findOneById(room._id);
 		if (m) {
-			return propagateToSmarti(verbs.post, `conversation/${ m.conversationId }/publish`);
+			const propagate = RocketChat.RateLimiter.limitFunction(
+				propagateToSmarti, 5, 1000, {
+					userId(userId) {
+						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+					}
+				}
+			);
+			return propagate(verbs.post, `conversation/${ m.conversationId }/publish`);
 		} else {
 			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
 		}
