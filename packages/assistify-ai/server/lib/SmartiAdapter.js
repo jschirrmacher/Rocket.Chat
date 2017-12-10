@@ -1,13 +1,63 @@
 /* globals SystemLogger, RocketChat */
 
-import { verbs, propagateToSmarti } from '../SmartiProxy';
+/** The possible HTTP methods provided by the Smarti adapter. */
+const verbs = {
+	get: 'GET',
+	post: 'POST',
+	put: 'PUT',
+	delete: 'DELETE'
+};
 
+/**
+ * The Smarti adapter handles all communication between the Rocket.Chat Server instance and Smarti.
+ * This is the central point for accessing Smarti.
+ * Do not send direct HTTP(S) requests from anywhere else.
+ */
 class SmartiAdapter {
 
+	/**
+	 * instantiates the Smarti adapter with the given settings/properties
+	 *
+	 * @param adapterProps the properties, read from the Assistify settings
+	 */
 	constructor(adapterProps) {
+
 		this.properties = adapterProps;
 	}
 
+	/**
+	 * Propagates requests to Smarti.
+	 * Make sure all requests to Smarti are using this function.
+	 *
+	 * @param method the HTTP method toi use
+	 * @param path the path to call
+	 * @param body the payload to pass (optional)
+	 *
+	 * @returns {null|*|JSON|HttpResponse}
+	 */
+	propagateToSmarti(method, path, body) {
+
+		const header = {
+			'X-Auth-Token': this.properties.smartiAuthToken,
+			'Content-Type': 'application/json; charset=utf-8'
+		};
+		try {
+			const response = HTTP.call(method, `${ this.properties.smartiUrl }${ path }`, {data: body, headers: header});
+			return RocketChat.API.v1.success(response.data);
+		} catch (error) {
+			SystemLogger.error('Could not complete', method, 'to', URL);
+			SystemLogger.debug(error);
+			return RocketChat.API.v1.failure(error);
+		}
+	}
+
+	/**
+	 * Event implementation that posts the message to Smarti.
+	 *
+	 * @param message the message to send
+	 *
+	 * @returns {*}
+	 */
 	onMessage(message) {
 
 		//TODO is this always a new one, what about update
@@ -24,34 +74,99 @@ class SmartiAdapter {
 			origin: message.origin,
 			support_area: supportArea
 		};
-		const propagate = RocketChat.RateLimiter.limitFunction(
-			propagateToSmarti, 5, 1000, {
+		return RocketChat.RateLimiter.limitFunction(
+			this.propagateToSmarti.bind(this), 5, 1000, {
 				userId(userId) {
 					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 				}
 			}
-		);
-		return propagate(verbs.post, `rocket/${ this.properties.smartiKnowledgeDomain }`, requestBody);
+		)(verbs.post, `rocket/${ this.properties.smartiKnowledgeDomain }`, requestBody);
 	}
 
+	/**
+	 * Event implementation that publishes the conversation in Smarti.
+	 *
+	 * @param room - the room to close/publish
+	 *
+	 * @returns {*}
+	 */
 	onClose(room) { //async
+
 		// get conversation id
 		const m = RocketChat.models.LivechatExternalMessage.findOneById(room._id);
 		if (m) {
-			const propagate = RocketChat.RateLimiter.limitFunction(
-				propagateToSmarti, 5, 1000, {
+			return RocketChat.RateLimiter.limitFunction(
+				this.propagateToSmarti.bind(this), 5, 1000, {
 					userId(userId) {
 						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 					}
 				}
-			);
-			return propagate(verbs.post, `conversation/${ m.conversationId }/publish`);
+			)(verbs.post, `conversation/${ m.conversationId }/publish`);
 		} else {
 			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
 		}
 	}
+
+	/**
+	 * Returns the analysed conversation by id (used by Smarti widget)
+	 *
+	 * @param conversationId - the conversation to retrieve
+	 *
+	 * @returns {*} the analysed conversation
+	 */
+	getConversation(conversationId) {
+		return RocketChat.RateLimiter.limitFunction(
+			this.propagateToSmarti.bind(this), 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		)(verbs.get, `conversation/${ conversationId }`);
+	}
+
+	/**
+	 * Returns the query builder results for the given conversation (used by Smarti widget)
+	 *
+	 * @param conversationId - the conversation id
+	 * @param templateIndex - the index of the template to get the results for
+	 * @param creator - the creator providing the suggestions
+	 * @param start - the offset of the suggestion results (pagination)
+	 *
+	 * @returns {*} the suggestions
+	 */
+	getSmartiQueryBuilderResult(conversationId, templateIndex, creator, start) {
+
+		return RocketChat.RateLimiter.limitFunction(
+			this.propagateToSmarti.bind(this), 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		)(verbs.get, `conversation/${ conversationId }/template/${ templateIndex }/${ creator }?start=${ start }`);
+	}
+
+	/**
+	 * Searches for conversations within the given client
+	 *
+	 * @param clientId the id of the client to search conversations for
+	 * @param queryParams the search query parameters
+	 *
+	 * @returns {*} the serach result
+	 */
+	searchConversation(clientId, queryParams) {
+		return RocketChat.RateLimiter.limitFunction(
+			this.propagateToSmarti.bind(this), 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		)(verbs.get, `rocket/${ clientId }/search${ queryParams }`);
+	}
 }
 
+/**
+ * The factory to create a Smarti adapter singleton
+ */
 export class SmartiAdapterFactory {
 
 	/**
@@ -81,6 +196,13 @@ export class SmartiAdapterFactory {
 		});
 	}
 
+	/**
+	 * Returns the SmartiAdapter singleton
+	 *
+	 * @param reload - to recreate the singleton object
+	 *
+	 * @returns {null|undefined|*|SmartiAdapter}
+	 */
 	static getInstance(reload) {
 
 		if (!this.singleton || reload) {
@@ -109,24 +231,114 @@ export class SmartiAdapterFactory {
 
 			this.singleton = new SmartiAdapter(adapterProps);
 			return this.singleton;
+
 		} else {
+
 			return this.singleton;
 		}
 	}
 }
 
 /**
- * get conversation id via realtime api (used by smarti widget)
- * ddp.method("getLastSmartiResult",[options.channel]);
+ * This methods are made available to be accessed via DDP.
+ * They are called by the Smarti widget.
  */
 Meteor.methods({
 
+	/**
+	 * Returns the conversation id via real-time api
+	 *
+	 * @param rid the roomId to get the last sent message from
+	 *
+	 * @returns {*} the last message, including the rid
+	 */
 	getLastSmartiResult(rid) {
 
 		//Todo: check if the user is allowed to get this results!
-
 		SystemLogger.debug('Smarti - last smarti result requested:', JSON.stringify(rid, '', 2));
 		SystemLogger.debug('Smarti - last message:', JSON.stringify(RocketChat.models.LivechatExternalMessage.findOneById(rid), '', 2));
 		return RocketChat.models.LivechatExternalMessage.findOneById(rid);
+	},
+
+
+	/**
+	 * Delegates to the Smarti adapter implementation
+	 */
+	getSmartiConversation(conversationId) {
+
+		return SmartiAdapterFactory.getInstance().getConversation(conversationId);
+	},
+
+
+	/**
+	 * Delegates to the Smarti adapter implementation
+	 */
+	getSmartiQueryBuilderResult(conversationId, templateIndex, creator, start) {
+
+		return SmartiAdapterFactory.getInstance().getSmartiQueryBuilderResult(conversationId, templateIndex, creator, start);
+	}
+});
+
+/**
+ * Add a proxy to the smarti conversation search.
+ * This endpoint is used by chatpal search.
+ */
+RocketChat.API.v1.addRoute('smarti.search/:_clientId', { authRequired: false }, {
+
+	get() {
+
+		check(this.urlParams, {
+			_clientId: String
+		});
+
+		let queryParams = '?';
+		for (const key in this.queryParams) {
+			if (this.queryParams.hasOwnProperty(key)) {
+				queryParams += `&${ key }=${ this.queryParams[key] }`;
+			}
+		}
+		return SmartiAdapterFactory.getInstance().searchConversation(this.urlParams._clientId, queryParams);
+	}
+});
+
+/**
+ * Add an incoming webhook to receive answers from Smarti.
+ * This allows asynchronous callback from Smarti, when analyzing the conversation has finished.
+ */
+RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
+
+	post() {
+
+		check(this.bodyParams, Match.ObjectIncluding({
+			conversationId: String,
+			channelId: String
+		}));
+
+		//verify token
+		const rcWebhookToken = SmartiAdapterFactory.getInstance().properties.rcWebhookToken;
+
+		if (this.urlParams._token && this.urlParams._token === rcWebhookToken) {
+
+			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
+			RocketChat.models.LivechatExternalMessage.update(
+				{
+					_id: this.bodyParams.channelId
+				}, {
+					rid: this.bodyParams.channelId,
+					knowledgeProvider: 'smarti',
+					conversationId: this.bodyParams.conversationId,
+					token: this.bodyParams.token,
+					ts: new Date()
+				}, {
+					upsert: true
+				}
+			);
+
+			const m = RocketChat.models.LivechatExternalMessage.findOneById(this.bodyParams.channelId);
+			RocketChat.Notifications.notifyRoom(this.bodyParams.channelId, 'newConversationResult', m);
+			return RocketChat.API.v1.success();
+		} else {
+			return RocketChat.API.v1.unauthorized({msg: 'token not valid'});
+		}
 	}
 });

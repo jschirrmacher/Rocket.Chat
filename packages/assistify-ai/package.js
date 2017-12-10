@@ -27,9 +27,6 @@ Package.onUse(function(api) {
 	addDirectory(api, 'server/hooks', 'server');
 	addDirectory(api, 'server/methods', 'server');
 
-	// Server side API
-	api.addFiles('server/SmartiProxy.js', 'server');
-
 	//Configuration
 	api.addFiles('config.js', 'server');
 
