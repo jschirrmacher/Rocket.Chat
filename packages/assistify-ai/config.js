@@ -1,3 +1,5 @@
+/* globals RocketChat */
+
 Meteor.startup(() => {
 	const addAISettings = function() {
 

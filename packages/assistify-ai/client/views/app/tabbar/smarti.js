@@ -1,4 +1,4 @@
-/* globals TAPi18n */
+/* globals TAPi18n, RocketChat */
 
 Template.AssistifySmarti.onCreated(function() {
 	this.helpRequest = new ReactiveVar(null);
@@ -26,6 +26,7 @@ Template.AssistifySmarti.onDestroyed(function() {
 
 /**
  * Create Smarti (as soon as the script is loaded)
+ * @namespace SmartiWidget
  */
 Template.AssistifySmarti.onRendered(function() {
 
@@ -45,17 +46,15 @@ Template.AssistifySmarti.onRendered(function() {
 			}
 		} else {
 			instance.smartiLoaded.set(true);
-			const SMARTI_URL = RocketChat.settings.get('Assistify_AI_Smarti_Base_URL').replace(/\/?$/, '/');
 			const ROCKET_CHAT_URL = RocketChat.settings.get('Site_Url').replace(/\/?$/, '/');
 			// stripping only the protocol ("http") from the site-url either creates a secure or an insecure websocket connection
 			const WEBSOCKET_URL = `ws${ ROCKET_CHAT_URL.substring(4) }websocket/`;
 			const WIDGET_POSTING_TYPE = RocketChat.settings.get('Assistify_AI_Widget_Posting_Type') || 'postRichText';
-			const SMARTI_API_PROXY = `${ ROCKET_CHAT_URL }api/v1/assistify/smarti/`;
+			const SMARTI_CLIENT_NAME = RocketChat.settings.get('Assistify_AI_Smarti_Domain');
+
 			const smartiOptions = {
 				socketEndpoint: WEBSOCKET_URL,
-				smartiEndpoint: SMARTI_URL,
-				rocketBaseurl: ROCKET_CHAT_URL,
-				smartiApiProxy: SMARTI_API_PROXY,
+				clientName: SMARTI_CLIENT_NAME,
 				channel: instance.data.rid,
 				postings: {
 					type: WIDGET_POSTING_TYPE,
