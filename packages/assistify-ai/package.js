@@ -27,6 +27,10 @@ Package.onUse(function(api) {
 	addDirectory(api, 'server/hooks', 'server');
 	addDirectory(api, 'server/methods', 'server');
 
+	// Smarti proxy and router
+	api.addFiles('server/SmartiProxy.js', 'server');
+	api.addFiles('server/SmartiRouter.js', 'server');
+
 	//migration scripts
 	api.addFiles('server/migrations.js', 'server');
 
