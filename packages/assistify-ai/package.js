@@ -27,6 +27,9 @@ Package.onUse(function(api) {
 	addDirectory(api, 'server/hooks', 'server');
 	addDirectory(api, 'server/methods', 'server');
 
+	//migration scripts
+	api.addFiles('server/migrations.js', 'server');
+
 	//Configuration
 	api.addFiles('config.js', 'server');
 
