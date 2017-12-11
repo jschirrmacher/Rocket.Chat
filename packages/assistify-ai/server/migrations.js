@@ -7,7 +7,7 @@ on startup which migrate data - ignoring the actual version
 const settingsDbsToAssistify = function() {
 
 	const renameSetting = function(oldId, newId) {
-		const setting = RocketChat.models.Settings.findById(oldId).fetch();
+		const setting = RocketChat.models.Settings.findById(oldId).fetch()[0];
 		if (setting) {
 			RocketChat.models.Settings.removeById(setting._id);
 			setting._id = newId;
@@ -15,7 +15,9 @@ const settingsDbsToAssistify = function() {
 		}
 	};
 
+	renameSetting('DBS_AI_Enabled', 'Assistify_AI_Enabled');
 	renameSetting('DBS_AI_Source', 'Assistify_AI_Source');
+	renameSetting('reload_Assistify', 'Assistify_AI_Reload');
 	renameSetting('DBS_AI_Redlink_URL', 'Assistify_AI_Smarti_Base_URL');
 	renameSetting('DBS_AI_Redlink_Auth_Token', 'Assistify_AI_Smarti_Auth_Token');
 	renameSetting('DBS_AI_Redlink_Hook_Token', 'Assistify_AI_RocketChat_Webhook_Token');

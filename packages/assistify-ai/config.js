@@ -9,7 +9,7 @@ Meteor.startup(() => {
 				i18nLabel: 'Enabled'
 			});
 
-			this.add('Assistify_AI_Source', '', {
+			this.add('Assistify_AI_Source', '0', {
 				type: 'select',
 				values: [
 					{key: '0', i18nLabel: 'Assistify_AI_Source_Smarti'},
