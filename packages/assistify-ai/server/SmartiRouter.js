@@ -13,9 +13,6 @@ import {SmartiAdapter} from './lib/SmartiAdapter';
  * This allows asynchronous callback from Smarti, when analyzing the conversation has finished.
  */
 RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
-	get rcWebhookToken() {
-		RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
-	},
 
 	post() {
 
@@ -24,8 +21,10 @@ RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
 			channelId: String
 		}));
 
+		const rcWebhookToken = RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
+
 		//verify token
-		if (this.urlParams._token && this.urlParams._token === this.rcWebhookToken) {
+		if (this.urlParams._token && this.urlParams._token === rcWebhookToken) {
 
 			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
 			SmartiAdapter.analysisCompleted(this.bodyParams.channelId, this.bodyParams.conversationId, this.bodyParams.token);

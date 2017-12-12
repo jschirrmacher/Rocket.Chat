@@ -33,10 +33,10 @@ export class SmartiProxy {
 	 * @returns {Object}
 	 */
 	static propagateToSmarti(method, path, body = null) {
-		const url = `${ this.smartiUrl }${ path }`;
 
+		const url = `${ SmartiProxy.smartiUrl }${ path }`;
 		const header = {
-			'X-Auth-Token': this.smartiAuthToken,
+			'X-Auth-Token': SmartiProxy.smartiAuthToken,
 			'Content-Type': 'application/json; charset=utf-8'
 		};
 		try {

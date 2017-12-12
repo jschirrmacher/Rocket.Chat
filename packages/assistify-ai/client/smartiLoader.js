@@ -1,8 +1,10 @@
+/* globals RocketChat */
+
 /**
  * Load Smarti script asynchronously to the window.
  * This ensures the invalidation as settings are changed and allow the script to live beyond template lifetime.
  */
-RocketChat.settings.get('Assistify_AI_Smarti_Base_URL', function() {
+RocketChat.settings.onload('Assistify_AI_Smarti_Base_URL', function() {
 	Meteor.call('getSmartiUiScript', function(error, script) {
 		if (error) {
 			console.error('could not load Smarti:', error.message);

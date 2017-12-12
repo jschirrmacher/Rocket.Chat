@@ -116,7 +116,7 @@ function delayedReload() {
 Meteor.methods({
 	reloadSmarti() {
 		script = undefined;
-		loadSmarti();
+		script = loadSmarti();
 		delayedReload();
 		return {
 			message: 'settings-reloaded-successfully'
@@ -130,7 +130,7 @@ Meteor.methods({
 Meteor.methods({
 	getSmartiUiScript() {
 		if (!script) { //buffering
-			loadSmarti();
+			script = loadSmarti();
 			delayedReload();
 		}
 		return script;
