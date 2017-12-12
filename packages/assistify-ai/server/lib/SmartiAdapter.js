@@ -1,24 +1,25 @@
 /* globals SystemLogger, RocketChat */
 
-import {SmartiProxyFactory, verbs} from '../SmartiProxy';
+import {SmartiProxy, verbs} from '../SmartiProxy';
 
 /**
  * The SmartiAdapter handles the interaction with Smarti triggered by Rocket.Chat hooks (not by Smarti widget).
+ * This adapter has no state, as all settings are fully buffered. Thus, the complete class is static.
  */
-class SmartiAdapter {
+export class SmartiAdapter {
 
-	/**
-	 * Instantiates the Smarti adapter with options.
-	 *
-	 * @param {object} options: {
-	 *      smartiKnowledgeDomain: STRING,
-	 *      rocketWebhookUrl: STRING
-	 * }
-	 */
-	constructor(options) {
+	static get rocketWebhookToken() {
+		RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
+	}
 
-		this.properties = options;
-		this.smartiProxy = SmartiProxyFactory.getInstance();
+	static get rocketWebhookUrl() {
+		let rocketUrl = RocketChat.settings.get('Site_Url');
+		rocketUrl = rocketUrl ? rocketUrl.replace(/\/?$/, '/') : rocketUrl;
+		return `${ rocketUrl }api/v1/smarti.result/${ this.rocketWebhookToken }`;
+	}
+
+	static get smartiKnowledgeDomain() {
+		return RocketChat.settings.get('Assistify_AI_Smarti_Domain');
 	}
 
 	/**
@@ -35,14 +36,14 @@ class SmartiAdapter {
 	 *
 	 * @returns {*}
 	 */
-	onMessage(message) {
+	static onMessage(message) {
 
 		//TODO is this always a new one, what about update
 		const helpRequest = RocketChat.models.HelpRequests.findOneByRoomId(message.rid);
 		const supportArea = helpRequest ? helpRequest.supportArea : undefined;
 		const requestBody = {
 			// TODO: Should this really be in the responsibility of the Adapter?
-			webhook_url: this.properties.rocketWebhookUrl,
+			webhook_url: this.rocketWebhookUrl,
 			message_id: message._id,
 			channel_id: message.rid,
 			user_id: message.u._id,
@@ -52,13 +53,7 @@ class SmartiAdapter {
 			origin: message.origin,
 			support_area: supportArea
 		};
-		return RocketChat.RateLimiter.limitFunction(
-			this.smartiProxy.propagateToSmarti.bind(this.smartiProxy), 5, 1000, {
-				userId(userId) {
-					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-				}
-			}
-		)(verbs.post, `rocket/${ this.properties.smartiKnowledgeDomain }`, requestBody);
+		return SmartiProxy.propagateToSmarti(verbs.post, `rocket/${ this.smartiKnowledgeDomain }`, requestBody);
 	}
 
 	/**
@@ -68,63 +63,39 @@ class SmartiAdapter {
 	 *
 	 * @returns {*}
 	 */
-	onClose(room) { //async
+	static onClose(room) { //async
 
 		// get conversation id
 		const m = RocketChat.models.LivechatExternalMessage.findOneById(room._id);
 		if (m) {
-			return RocketChat.RateLimiter.limitFunction(
-				this.smartiProxy.propagateToSmarti.bind(this.smartiProxy), 5, 1000, {
-					userId(userId) {
-						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-					}
-				}
-			)(verbs.post, `conversation/${ m.conversationId }/publish`);
+			SmartiProxy.propagateToSmarti(verbs.post, `conversation/${ m.conversationId }/publish`);
 		} else {
 			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
 		}
 	}
-}
-
-/**
- * Factory to create a Smarti adapter singleton.
- */
-export class SmartiAdapterFactory {
 
 	/**
-	 *  Refreshes the adapter instances on change of the configuration
-	 *  TODO: validate it works
-	 */
-	constructor() {
-
-		this.singleton = undefined;
-		const factory = this;
-
-		RocketChat.settings.get('Assistify_AI_Smarti_Domain', () => {
-			factory.singleton = null;
-		});
-	}
-
-	/**
-	 * Returns the SmartiAdapter singleton
+	 * This method provides an implementation for a hook registering an asynchronously sent response from Smarti to RocketChat
 	 *
-	 * @returns {SmartiAdapter}
+	 * @param roomId
+	 * @param smartiConversationId
+	 * @param token
 	 */
-	static getInstance() {
+	static analysisCompleted(roomId, smartiConversationId, token) {
+		RocketChat.models.LivechatExternalMessage.update(
+			{
+				_id: roomId
+			}, {
+				rid: roomId,
+				knowledgeProvider: 'smarti',
+				conversationId: smartiConversationId,
+				token,
+				ts: new Date()
+			}, {
+				upsert: true
+			}
+		);
 
-		if (!this.singleton) {
-
-			const knowledgeDomain = RocketChat.settings.get('Assistify_AI_Smarti_Domain');
-			let rocketUrl = RocketChat.settings.get('Site_Url');
-			rocketUrl = rocketUrl ? rocketUrl.replace(/\/?$/, '/') : rocketUrl;
-			const rocketWebhookToken = RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
-			const rcWebhookUrl = `${ rocketUrl }api/v1/smarti.result/${ rocketWebhookToken }`;
-			const options = {
-				smartiKnowledgeDomain: knowledgeDomain,
-				rocketWebhookUrl: rcWebhookUrl
-			};
-			this.singleton = new SmartiAdapter(options);
-		}
-		return this.singleton;
+		RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', RocketChat.models.LivechatExternalMessage.findOneById(roomId));
 	}
 }

@@ -1,10 +1,9 @@
 /* globals SystemLogger, RocketChat */
 
-// TODO: cache/reload this setting
-const rcWebhookToken = RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
+import {SmartiAdapter} from './lib/SmartiAdapter';
 
 /**
- * The SmartiRouter handels all incoming HTTP requests.
+ * The SmartiRouter handles all incoming HTTP requests from Smarti.
  * This is the only place, where adding routes to the Rocket.Chat API, related to Smarti
  * All HTTP inbound traffic (from Rocket.Chat to Smarti) should pass the this router.
  */
@@ -14,6 +13,9 @@ const rcWebhookToken = RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_
  * This allows asynchronous callback from Smarti, when analyzing the conversation has finished.
  */
 RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
+	get rcWebhookToken() {
+		RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
+	},
 
 	post() {
 
@@ -23,25 +25,10 @@ RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
 		}));
 
 		//verify token
-		if (this.urlParams._token && this.urlParams._token === rcWebhookToken) {
+		if (this.urlParams._token && this.urlParams._token === this.rcWebhookToken) {
 
 			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
-			RocketChat.models.LivechatExternalMessage.update(
-				{
-					_id: this.bodyParams.channelId
-				}, {
-					rid: this.bodyParams.channelId,
-					knowledgeProvider: 'smarti',
-					conversationId: this.bodyParams.conversationId,
-					token: this.bodyParams.token,
-					ts: new Date()
-				}, {
-					upsert: true
-				}
-			);
-
-			const m = RocketChat.models.LivechatExternalMessage.findOneById(this.bodyParams.channelId);
-			RocketChat.Notifications.notifyRoom(this.bodyParams.channelId, 'newConversationResult', m);
+			SmartiAdapter.analysisCompleted(this.bodyParams.channelId, this.bodyParams.conversationId, this.bodyParams.token);
 			return RocketChat.API.v1.success();
 		} else {
 			return RocketChat.API.v1.unauthorized({msg: 'token not valid'});

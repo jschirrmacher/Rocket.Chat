@@ -1,6 +1,6 @@
 /* globals RocketChat */
 
-import {SmartiAdapterFactory} from './SmartiAdapter';
+import {SmartiAdapter} from './SmartiAdapter';
 import {ApiAiAdapter} from './AiApiAdapter';
 
 export function getKnowledgeAdapter() {
@@ -31,6 +31,6 @@ export function getKnowledgeAdapter() {
 			});
 			return new ApiAiAdapter(adapterProps);
 		case KNOWLEDGE_SRC_SMARTI:
-			return SmartiAdapterFactory.getInstance(); // buffering done inside the factory method
+			return SmartiAdapter;
 	}
 }
