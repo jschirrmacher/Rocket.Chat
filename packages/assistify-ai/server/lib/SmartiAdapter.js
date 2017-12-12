@@ -8,14 +8,10 @@ import {SmartiProxy, verbs} from '../SmartiProxy';
  */
 export class SmartiAdapter {
 
-	static get rocketWebhookToken() {
-		RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token');
-	}
-
 	static get rocketWebhookUrl() {
 		let rocketUrl = RocketChat.settings.get('Site_Url');
 		rocketUrl = rocketUrl ? rocketUrl.replace(/\/?$/, '/') : rocketUrl;
-		return `${ rocketUrl }api/v1/smarti.result/${ this.rocketWebhookToken }`;
+		return `${ rocketUrl }api/v1/smarti.result/${ RocketChat.settings.get('Assistify_AI_RocketChat_Webhook_Token') }`;
 	}
 
 	static get smartiKnowledgeDomain() {
@@ -43,7 +39,7 @@ export class SmartiAdapter {
 		const supportArea = helpRequest ? helpRequest.supportArea : undefined;
 		const requestBody = {
 			// TODO: Should this really be in the responsibility of the Adapter?
-			webhook_url: this.rocketWebhookUrl,
+			webhook_url: SmartiAdapter.rocketWebhookUrl,
 			message_id: message._id,
 			channel_id: message.rid,
 			user_id: message.u._id,
@@ -53,7 +49,7 @@ export class SmartiAdapter {
 			origin: message.origin,
 			support_area: supportArea
 		};
-		return SmartiProxy.propagateToSmarti(verbs.post, `rocket/${ this.smartiKnowledgeDomain }`, requestBody);
+		return SmartiProxy.propagateToSmarti(verbs.post, `rocket/${ SmartiAdapter.smartiKnowledgeDomain }`, requestBody);
 	}
 
 	/**
