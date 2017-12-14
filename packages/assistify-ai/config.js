@@ -77,3 +77,12 @@ Meteor.startup(() => {
 		RocketChat.settings.get('Assistify', addAISettings) :
 		RocketChat.settings.addGroup('Assistify', addAISettings);
 });
+
+RocketChat.settings.get('Assistify_AI_Smarti_Base_URL', (id, smartiValue)=>{
+	RocketChat.models.Settings.updateValueById('CHATPAL_BASEURL', `${ smartiValue }rocket/chatpal/search-message`);
+});
+
+RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token', (id, smartiValue)=>{
+	RocketChat.models.Settings.updateValueById('CHATPAL_AUTH_TOKEN', smartiValue);
+});
+

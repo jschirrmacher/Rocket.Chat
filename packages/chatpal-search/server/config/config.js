@@ -7,6 +7,12 @@ Meteor.startup(() => {
 				i18nLabel: 'CHATPAL_BASEURL'
 			});
 
+			this.add('CHATPAL_AUTH_TOKEN', '', {
+				type: 'string',
+				public: true,
+				i18nLabel: 'CHATPAL_AUTH_TOKEN'
+			});
+
 			this.add('CHATPAL_PAGESIZE', 5, {
 				type: 'int',
 				public: true,
@@ -68,6 +74,6 @@ Meteor.startup(() => {
 });
 
 export const Chatpal = {
-	models : {},
+	models: {},
 	service: {}
 };
