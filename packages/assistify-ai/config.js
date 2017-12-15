@@ -79,10 +79,10 @@ Meteor.startup(() => {
 });
 
 RocketChat.settings.get('Assistify_AI_Smarti_Base_URL', (id, smartiValue)=>{
-	RocketChat.models.Settings.updateValueById('CHATPAL_BASEURL', `${ smartiValue }rocket/chatpal/search-message`);
+	RocketChat.models.Settings.update({_id: 'CHATPAL_BASEURL'}, {value: smartiValue, readonly: true});
 });
 
 RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token', (id, smartiValue)=>{
-	RocketChat.models.Settings.updateValueById('CHATPAL_AUTH_TOKEN', smartiValue);
+	RocketChat.models.Settings.update({_id: 'CHATPAL_AUTH_TOKEN'}, {value: smartiValue, readonly: true});
 });
 
