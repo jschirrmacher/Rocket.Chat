@@ -15,7 +15,7 @@
 							</svg>
 						</div>
 						<input name="expertise" type="text" class="rc-input__element" id="expertise-search"
-							   placeholder={{_ "New_request_for_expertise"}}  autocomplete=off value={{expertise}}>
+							   placeholder={{_ "New_request_for_expertise"}}  autocomplete=off value={{expertise}} />
 					</div>
 					{{#unless autocomplete 'isShowing'}}
 						{{#if expertise}}
@@ -45,7 +45,7 @@
 							</svg>
 						</div>
 						<input name="request_title" type="text" class="rc-input__element" id="request_title"
-							   placeholder={{_ "New_request_title"}} autocomplete="off">
+							   placeholder={{_ "New_request_title"}} autocomplete="off" />
 					</div>
 				</label>
 				{{#if titleError}}
@@ -59,14 +59,14 @@
 						<div class="rc-input__icon">
 							{{> icon block="rc-input__icon-svg" icon="send"}}
 						</div>
-						<input name="first_question" type="text" class="rc-input__element" id="first_question"
-							   placeholder={{_ "New_request_first_question"}} autocomplete="off">
+						<textarea name="first_question" type="text" rows="1" class="rc-input__element" id="first_question"
+							   placeholder={{_ "New_request_first_question"}} autocomplete="off" />
 					</div>
 				</label>
 			</div>
 			<div class="rc-input">
 				<input class="rc-button rc-button--primary js-save-request" type="submit" data-button="create"
-					   value="{{_ "Create"}}" {{createIsDisabled}}>
+					   value="{{_ "Create"}}" {{createIsDisabled}} />
 			</div>
 		</div>
 	</form>
