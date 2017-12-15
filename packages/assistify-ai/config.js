@@ -78,11 +78,25 @@ Meteor.startup(() => {
 		RocketChat.settings.addGroup('Assistify', addAISettings);
 });
 
-RocketChat.settings.get('Assistify_AI_Smarti_Base_URL', (id, smartiValue)=>{
-	RocketChat.models.Settings.update({_id: 'CHATPAL_BASEURL'}, {value: smartiValue, readonly: true});
+RocketChat.settings.get('Assistify_AI_Smarti_Base_URL', (id, smartiValue) => {
+	const domain = RocketChat.models.Settings.findOneNotHiddenById('Assistify_AI_Smarti_Domain');
+	if (domain) {
+		RocketChat.models.Settings.update({_id: 'CHATPAL_BASEURL'}, {
+			$set: {
+				value: `${ smartiValue }rocket/${ domain.value }/search-message`,
+				readonly: true,
+				enableQuery: '{"_id":"Assistify_AI_Smarti_Base_URL","value":""}'
+
+			}
+		});
+	}
 });
 
-RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token', (id, smartiValue)=>{
-	RocketChat.models.Settings.update({_id: 'CHATPAL_AUTH_TOKEN'}, {value: smartiValue, readonly: true});
+RocketChat.settings.get('Assistify_AI_Smarti_Auth_Token', (id, smartiValue) => {
+	RocketChat.models.Settings.update({_id: 'CHATPAL_AUTH_TOKEN'}, {
+		$set: {
+			value: smartiValue, readonly: true, enableQuery: '{"_id":"Assistify_AI_Smarti_Auth_Token","value":""}'
+		}
+	});
 });
 
