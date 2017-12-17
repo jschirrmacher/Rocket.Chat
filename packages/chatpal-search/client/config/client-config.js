@@ -2,7 +2,7 @@ RocketChat.TabBar.removeButton('message-search');
 
 TAPi18n.loadTranslations({
 	en: {
-		CHATPAL_ENTER_SEARCH_STRING: 'Enter search string',
+		CHATPAL_ENTER_SEARCH_STRING: 'Search knowledge base',
 		CHATPAL_SEARCH: 'Chatpal Search',
 		CHATPAL_BOT: 'Chatpal Bots',
 		CHATPAL_SEARCH_RESULTS_TITLE: 'Search Results',
@@ -23,7 +23,7 @@ TAPi18n.loadTranslations({
 		CHATPAL_SEARCH_GOTO_MESSAGE: 'Go to message'
 	},
 	de: {
-		CHATPAL_ENTER_SEARCH_STRING: 'Suchbegriff eingeben',
+		CHATPAL_ENTER_SEARCH_STRING: 'Wissensbasis durchsuchen',
 		CHATPAL_SEARCH: 'Chatpal Suche',
 		CHATPAL_BOT: 'Chatpal Bots',
 		CHATPAL_SEARCH_RESULTS_TITLE: 'Suchergebnisse',
@@ -31,8 +31,8 @@ TAPi18n.loadTranslations({
 		CHATPAL_BASEURL_DESCRIPTION: 'URL des Suchservice. Muss mit http:// oder https:// beginnen',
 		CHATPAL_AUTH_TOKEN: 'Auth-Token',
 		CHATPAL_AUTH_TOKEN_DESCRIPTION: 'Der Auth-Token wird as HTTP-Heaer \'X-Auth-Token\' geschickt',
-    CHATPAL_BASIC_AUTH: 'Basic Auth',
-    CHATPAL_BASIC_AUTH_DESCRIPTION: 'user:passwort um Anfragen an das Suchservice zu authentifizieren',
+		CHATPAL_BASIC_AUTH: 'Basic Auth',
+		CHATPAL_BASIC_AUTH_DESCRIPTION: 'user:passwort um Anfragen an das Suchservice zu authentifizieren',
 		CHATPAL_BOT_BASEURL: 'URL des Botservice',
 		CHATPAL_PAGESIZE: 'Seitengröße',
 		CHATPAL_DATE_FORMAT: 'Datumsformat (e.g MMM Do)',
