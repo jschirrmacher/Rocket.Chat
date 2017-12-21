@@ -68,6 +68,9 @@ Template.AssistifyCreateRequest.helpers({
 	titleError() {
 		const instance = Template.instance();
 		return instance.titleError.get();
+	},
+	maxMessageLength() {
+		return RocketChat.settings.get('Message_MaxAllowedSize');
 	}
 });
 
@@ -142,7 +145,10 @@ Template.AssistifyCreateRequest.onRendered(function() {
 	const instance = this;
 	const expertiseElement = this.find('input[name="expertise"]');
 	const titleElement = this.find('input[name="request_title"]');
-	const questionElement = this.find('input[name="first_question"]');
+	const questionElement = this.find('[name="first_question"]');
+
+	//Bind autogrow property to 'First Question' element
+	questionElement.textarea = this.$('.rc-input__textarea').autogrow();
 
 	instance.ac.element = expertiseElement;
 	instance.ac.$element = $(instance.ac.element);

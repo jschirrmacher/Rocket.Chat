@@ -1,96 +1,76 @@
-(function($) {
+(function($)
+{
 	/**
 	 * Auto-growing textareas; technique ripped from Facebook
 	 *
 	 *
 	 * http://github.com/jaz303/jquery-grab-bag/tree/master/javascripts/jquery.autogrow-textarea.js
 	 */
-	$.fn.autogrow = function(options) {
-		return this.filter('textarea').each(function() {
-			var self = this;
-			var $self = $(self);
-			var minHeight = $self.height();
+	$.fn.autogrow = function(options)
+	{
+		return this.filter('textarea').each(function()
+		{
+			var self         = this;
+			var $self        = $(self);
+			var minHeight    = $self.height();
+			var noFlickerPad = $self.hasClass('autogrow-short') ? 0 : parseInt($self.css('lineHeight')) || 0;
 			var settings = $.extend({
 				preGrowCallback: null,
 				postGrowCallback: null
-			}, options);
+			}, options );
 
-			const maxHeight = window.getComputedStyle(self)['max-height'].replace('px', '');
+			var shadow = $('<div></div>').css({
+				position:    'absolute',
+				top:         -10000,
+				left:        -10000,
+				width:       $self.width(),
+				fontSize:    $self.css('fontSize'),
+				fontFamily:  $self.css('fontFamily'),
+				fontWeight:  $self.css('fontWeight'),
+				lineHeight:  $self.css('lineHeight'),
+				resize:      'none',
+				'word-wrap': 'break-word'
+			}).appendTo(document.body);
 
-			var shadow = $("div.autogrow-shadow");
-			if (!shadow.length) {
-				shadow = $('<div></div>').addClass("autogrow-shadow").appendTo(document.body);
-			}
-
-			shadow.css({
-				position: 'absolute',
-				top: -10000,
-				left: -10000,
-				width: $self.width(),
-				fontSize: $self.css('fontSize'),
-				fontFamily: $self.css('fontFamily'),
-				fontWeight: $self.css('fontWeight'),
-				lineHeight: $self.css('lineHeight'),
-				resize: 'none',
-				wordWrap: 'break-word'
-			});
-
-			var update = function(event) {
-				var times = function(string, number) {
-					for (var i = 0, r = ''; i < number; i++) r += string;
+			var update = function(event)
+			{
+				var times = function(string, number)
+				{
+					for (var i=0, r=''; i<number; i++) r += string;
 					return r;
 				};
 
-				var val = self.value.replace(/</g, '&lt;')
+				var val = self.value.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
 					.replace(/>/g, '&gt;')
-					.replace(/&/g, '&amp;')
-					.replace(/\n$/, '<br/>&nbsp;')
+					.replace(/\n$/, '<br/>&#xa0;')
 					.replace(/\n/g, '<br/>')
-					.replace(/ {2,}/g, function(space) {
-						return times('&nbsp;', space.length - 1) + ' ';
-					});
+					.replace(/ {2,}/g, function(space){ return times('&#xa0;', space.length - 1) + ' ' });
 
 				// Did enter get pressed?  Resize in this keydown event so that the flicker doesn't occur.
-				if (event && event.data && event.data.event === 'keydown' && event.keyCode === 13 && (event.shiftKey || event.ctrlKey || event.altKey)) {
+				if (event && event.data && event.data.event === 'keydown' && event.keyCode === 13) {
 					val += '<br />';
 				}
 
 				shadow.css('width', $self.width());
-				shadow.html(val);
+				shadow.html(val + (noFlickerPad === 0 ? '...' : '')); // Append '...' to resize pre-emptively.
 
-				var newHeight = Math.max(shadow.height() + 1, minHeight) + 1;
-				if (settings.preGrowCallback !== null) {
-					newHeight = settings.preGrowCallback($self, shadow, newHeight, minHeight);
+				var newHeight=Math.max(shadow.height() + noFlickerPad, minHeight);
+				if(settings.preGrowCallback!=null){
+					newHeight=settings.preGrowCallback($self,shadow,newHeight,minHeight);
 				}
 
-				if(newHeight === $self[0].offsetHeight){
-					return true;
-				}
+				$self.height(newHeight);
 
-				var overflow = 'hidden';
-				if(maxHeight <= newHeight){
-					newHeight = maxHeight;
-					overflow = ''
-				} else {
-					overflow = 'hidden'
-				}
-
-				$self.stop().animate( { height: newHeight }, { duration: 100, complete: ()=> {
-					$self.trigger('autogrow', []);
-				}}).css('overflow', overflow);
-
-				$self.trigger('autogrow', []);
-
-				if (settings.postGrowCallback !== null) {
+				if(settings.postGrowCallback!=null){
 					settings.postGrowCallback($self);
 				}
-			};
+			}
 
-			$self.on('focus change input', update);
+			$self.change(update).keyup(update).keydown({event:'keydown'},update);
 			$(window).resize(update);
 
 			update();
-			self.updateAutogrow = update;
 		});
 	};
 })(jQuery);
