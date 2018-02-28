@@ -4,9 +4,7 @@ node {
     // git fetch
     // git checkout ${BRANCH}
     // git pull origin ${BRANCH}
-    sh '''#!/bin/bash
-            echo sh(returnStdout: true, script: 'env')
-         '''
+    echo sh(returnStdout: true, script: 'env')
   }
 
   stage('Preparation'){
