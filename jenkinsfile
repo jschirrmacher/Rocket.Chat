@@ -1,4 +1,8 @@
-node {
+pipeline {
+  agent {
+      docker { image 'node:7-alpine' }
+  }
+  
   stage('Checkout') {
     // BRANCH=${GIT_BRANCH#*/}
     // git fetch
