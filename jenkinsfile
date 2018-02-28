@@ -1,11 +1,11 @@
-node {
-  // agent {
-  //     docker { image 'node:7-alpine' }
-  // }
+pipeline {
+  agent {
+      docker { image 'node:7-alpine' }
+  }
   stages {
     stage('Checkout') {
       steps{
-
+        
         // BRANCH=${GIT_BRANCH#*/}
         // git fetch
         // git checkout ${BRANCH}
