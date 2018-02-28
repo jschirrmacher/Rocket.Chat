@@ -59,40 +59,25 @@ node('Build') {
 
   stage('Testing') {
     parallel(
-      stage('API-Tests'){
-        stage('Start-MongoDB'){
+      stages {
+        stage('API-Tests'){
           export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
           MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
-        }
-        stage('Start-Rocket.Chat'){
           PORT=3000 node /tmp/build-test/bundle/main.js
-        }
-        stage('Run-Chimp-Tests'){
           TEST_PATH=api npm test
         }
-      }
-      stage('Rocket.Chat-UI-Tests') {
-        stage('Start-MongoDB'){
-          export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
-          MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
+        
+        stage('Rocket.Chat-UI-Tests') {
+            export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
+            MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
+            PORT=3001 node /tmp/build-test/bundle/main.js
+            TEST_PATH=ui npm test
         }
-        stage('Start-Rocket.Chat'){
-          PORT=3001 node /tmp/build-test/bundle/main.js
-        }
-        stage('Run-Chimp-Tests'){
-          TEST_PATH=ui npm test
-        }
-      }
-      stage('Assistify-Tests'){
-        stage('Start-MongoDB'){
-          export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
-          MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
-        }
-        stage('Start-Rocket.Chat'){
-          PORT=3002 node /tmp/build-test/bundle/main.js
-        }
-        stage('Run-Chimp-Tests'){
-          TEST_PATH=ui_smarti npm test
+        stage('Assistify-Tests'){
+            export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
+            MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
+            PORT=3002 node /tmp/build-test/bundle/main.js
+            TEST_PATH=ui_smarti npm test
         }
       }
     )
