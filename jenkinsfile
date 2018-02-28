@@ -54,7 +54,7 @@ node('Build') {
 
   stage('Smarti') {
     // chmod +x .scripts/smarti.sh
-    .scripts/smarti.sh
+    sh '.scripts/smarti.sh'
   }
 
   stage('Testing') {
