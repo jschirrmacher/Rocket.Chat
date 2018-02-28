@@ -72,37 +72,40 @@ pipeline {
     }
 
     stage('Testing') {
-      steps{
-        parallel(
-          stages {
-            stage('API-Tests'){
-              sh '''#!/bin/bash
-                      export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
-                      MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
-                      PORT=3000 node /tmp/build-test/bundle/main.js
-                      TEST_PATH=api npm test
-              '''
-            }
-            
-            stage('UI-Tests') {
-              sh '''#!/bin/bash
-                      export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
-                      MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
-                      PORT=3001 node /tmp/build-test/bundle/main.js
-                      TEST_PATH=ui npm test
-              '''
-            }
-            stage('Assistify-Tests'){
-              sh '''#!/bin/bash
-                      export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
-                      MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
-                      PORT=3002 node /tmp/build-test/bundle/main.js
-                      TEST_PATH=ui_smarti npm test
-              '''
-            }
+      parallel(
+        stage('API-Tests'){
+          steps{
+            sh '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
+                  PORT=3000 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=api npm test
+            '''
           }
-        )
-      }
+        }
+        
+        stage('UI-Tests') {
+          steps {
+            sh '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
+                  PORT=3001 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=ui npm test
+            '''
+          }
+          
+        }
+        stage('Assistify-Tests'){
+          steps{
+            sh '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
+                  PORT=3002 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=ui_smarti npm test
+            '''
+          }
+        }
+      )
     }
 
     stage('Approval') {
