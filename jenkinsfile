@@ -4,43 +4,52 @@ node('Build') {
     // git fetch
     // git checkout ${BRANCH}
     // git pull origin ${BRANCH}
-    echo sh(returnStdout: true, script: 'env')
+    bash '''#!/bin/bash
+            echo sh(returnStdout: true, script: 'env')
+         '''
   }
 
   stage('Preparation'){
-    if [ ! -e "$HOME/.meteor/meteor" ]; then curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh; fi
-    .scripts/start-xvfb.sh
-    export PATH="$HOME/.meteor:$PATH"
-    meteor --version
-    if [[ $TRAVIS_TAG ]]; then meteor reset; fi
-    
+    bash '''#!/bin/bash
+            if [ ! -e "$HOME/.meteor/meteor" ]; then curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh; fi
+            .scripts/start-xvfb.sh
+            export PATH="$HOME/.meteor:$PATH"
+            meteor --version
+            if [[ $TRAVIS_TAG ]]; then meteor reset; fi
+    '''
   }
 
   stage('Mongo') {
-    echo "replication:" | sudo tee -a /etc/mongod.conf
-    echo "  replSetName: \"rs0\"" | sudo tee -a /etc/mongod.conf
-    sudo service mongod restart
-    mongo --eval 'rs.initiate({_id:"rs0", members: [{"_id":1, "host":"localhost:27017"}]})'
+    bash '''#!/bin/bash
+            echo "replication:" | sudo tee -a /etc/mongod.conf
+            echo "  replSetName: \"rs0\"" | sudo tee -a /etc/mongod.conf
+            sudo service mongod restart
+            mongo --eval 'rs.initiate({_id:"rs0", members: [{"_id":1, "host":"localhost:27017"}]})'
+         '''
   }
 
   stage('Check-linting') {
-    meteor npm run lint
-    meteor npm run testunit
-    meteor npm run stylelint
+    bash '''#!/bin/bash
+            meteor npm run lint
+            meteor npm run testunit
+            meteor npm run stylelint
+    '''
   }
 
   stage('Build-Rocket.Chat') {
-    mkdir /tmp/build
-    git submodule init
-    git submodule update
-    meteor npm install
-    meteor build --headless /tmp/build
-    mkdir /tmp/build-test
-    tar -xf /tmp/build/Rocket.Chat.tar.gz -C /tmp/build-test/
-    cd /tmp/build-test/bundle/programs/server
-    npm install
-    mongo --eval 'rs.status()'
-    mongo meteor --eval 'db.getCollectionNames()'
+    bash '''#!/bin/bash
+            mkdir /tmp/build
+            git submodule init
+            git submodule update
+            meteor npm install
+            meteor build --headless /tmp/build
+            mkdir /tmp/build-test
+            tar -xf /tmp/build/Rocket.Chat.tar.gz -C /tmp/build-test/
+            cd /tmp/build-test/bundle/programs/server
+            npm install
+            mongo --eval 'rs.status()'
+            mongo meteor --eval 'db.getCollectionNames()'
+    '''
   }
 
   stage('Smarti') {
