@@ -53,7 +53,7 @@ node('Build') {
   }
 
   stage('Smarti') {
-    chmod +x .scripts/smarti.sh
+    // chmod +x .scripts/smarti.sh
     .scripts/smarti.sh
   }
 
@@ -61,23 +61,29 @@ node('Build') {
     parallel(
       stages {
         stage('API-Tests'){
-          export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
-          MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
-          PORT=3000 node /tmp/build-test/bundle/main.js
-          TEST_PATH=api npm test
+          bash '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
+                  PORT=3000 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=api npm test
+          '''
         }
         
-        stage('Rocket.Chat-UI-Tests') {
-            export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
-            MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
-            PORT=3001 node /tmp/build-test/bundle/main.js
-            TEST_PATH=ui npm test
+        stage('UI-Tests') {
+          bash '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
+                  PORT=3001 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=ui npm test
+          '''
         }
         stage('Assistify-Tests'){
-            export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
-            MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
-            PORT=3002 node /tmp/build-test/bundle/main.js
-            TEST_PATH=ui_smarti npm test
+          bash '''#!/bin/bash
+                  export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
+                  MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
+                  PORT=3002 node /tmp/build-test/bundle/main.js
+                  TEST_PATH=ui_smarti npm test
+          '''
         }
       }
     )
@@ -89,24 +95,26 @@ node('Build') {
 }
 node('Deployment') {
   stage('Deploy'){
-    mv ../${JOB_NAME}.tar.gz ${BUILD_FILE}
+    bash '''#!/bin/bash
+            mv ../${JOB_NAME}.tar.gz ${BUILD_FILE}
 
-    aws s3 cp ${BUILD_FILE} s3://${AWS_PATH}/rocketchat/ --region eu-central-1 --acl bucket-owner-full-control
+            aws s3 cp ${BUILD_FILE} s3://${AWS_PATH}/rocketchat/ --region eu-central-1 --acl bucket-owner-full-control
 
-    if [ ${BRANCH} = master ]
-      then
-          export TARGET_ENVIRONMENT=production
-            
-            # publish a new "latest"-file in order to make new clients be created with it
-            aws s3 cp ${BUILD_FILE} s3://${AWS_PATH}/rocketchat/rocket-chat-latest.tar.tgz --region eu-central-1 --acl bucket-owner-full-control
-    else
-      if [[ ${BRANCH} == develop ]] || [[ $BRANCH == "release/"* ]]
-          then
-            export TARGET_ENVIRONMENT=test
-        else
-            export TARGET_ENVIRONMENT=undefined
-      fi
-    fi
-    aws s3api put-object-tagging --bucket ${AWS_PATH} --key rocketchat/${BUILD_FILE} --tagging "{ \"TagSet\": [ { \"Key\": \"environment\", \"Value\": \"${TARGET_ENVIRONMENT}\" }, { \"Key\": \"nodejs_version\", \"Value\": \"${NODEJS_VERSION}\" }, { \"Key\": \"nodejs_checksum\", \"Value\": \"${NODEJS_CHECKSUM}\" }, { \"Key\": \"assets\", \"Value\": \"${ASSETS_URL}\" } ] }"
+            if [ ${BRANCH} = master ]
+              then
+                  export TARGET_ENVIRONMENT=production
+                    
+                    # publish a new "latest"-file in order to make new clients be created with it
+                    aws s3 cp ${BUILD_FILE} s3://${AWS_PATH}/rocketchat/rocket-chat-latest.tar.tgz --region eu-central-1 --acl bucket-owner-full-control
+            else
+              if [[ ${BRANCH} == develop ]] || [[ $BRANCH == "release/"* ]]
+                  then
+                    export TARGET_ENVIRONMENT=test
+                else
+                    export TARGET_ENVIRONMENT=undefined
+              fi
+            fi
+            aws s3api put-object-tagging --bucket ${AWS_PATH} --key rocketchat/${BUILD_FILE} --tagging "{ \"TagSet\": [ { \"Key\": \"environment\", \"Value\": \"${TARGET_ENVIRONMENT}\" }, { \"Key\": \"nodejs_version\", \"Value\": \"${NODEJS_VERSION}\" }, { \"Key\": \"nodejs_checksum\", \"Value\": \"${NODEJS_CHECKSUM}\" }, { \"Key\": \"assets\", \"Value\": \"${ASSETS_URL}\" } ] }"
+    '''
   }
 }
