@@ -4,13 +4,13 @@ node {
     // git fetch
     // git checkout ${BRANCH}
     // git pull origin ${BRANCH}
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             echo sh(returnStdout: true, script: 'env')
          '''
   }
 
   stage('Preparation'){
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             if [ ! -e "$HOME/.meteor/meteor" ]; then curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh; fi
             .scripts/start-xvfb.sh
             export PATH="$HOME/.meteor:$PATH"
@@ -20,7 +20,7 @@ node {
   }
 
   stage('Mongo') {
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             echo "replication:" | sudo tee -a /etc/mongod.conf
             echo "  replSetName: \"rs0\"" | sudo tee -a /etc/mongod.conf
             sudo service mongod restart
@@ -29,7 +29,7 @@ node {
   }
 
   stage('Check-linting') {
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             meteor npm run lint
             meteor npm run testunit
             meteor npm run stylelint
@@ -37,7 +37,7 @@ node {
   }
 
   stage('Build-Rocket.Chat') {
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             mkdir /tmp/build
             git submodule init
             git submodule update
@@ -61,7 +61,7 @@ node {
     parallel(
       stages {
         stage('API-Tests'){
-          bash '''#!/bin/bash
+          sh '''#!/bin/bash
                   export MONGO_URL: "mongodb://localhost:27017/rocketchat_api"
                   MONGO_OPLOG_URL: "mongodb://localhost:27017/local0"
                   PORT=3000 node /tmp/build-test/bundle/main.js
@@ -70,7 +70,7 @@ node {
         }
         
         stage('UI-Tests') {
-          bash '''#!/bin/bash
+          sh '''#!/bin/bash
                   export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui"
                   MONGO_OPLOG_URL: "mongodb://localhost:27017/local1"
                   PORT=3001 node /tmp/build-test/bundle/main.js
@@ -78,7 +78,7 @@ node {
           '''
         }
         stage('Assistify-Tests'){
-          bash '''#!/bin/bash
+          sh '''#!/bin/bash
                   export MONGO_URL: "mongodb://localhost:27017/rocketchat_ui_smarti"
                   MONGO_OPLOG_URL: "mongodb://localhost:27017/local2"
                   PORT=3002 node /tmp/build-test/bundle/main.js
@@ -95,7 +95,7 @@ node {
 }
 node('Deployment') {
   stage('Deploy'){
-    bash '''#!/bin/bash
+    sh '''#!/bin/bash
             mv ../${JOB_NAME}.tar.gz ${BUILD_FILE}
 
             aws s3 cp ${BUILD_FILE} s3://${AWS_PATH}/rocketchat/ --region eu-central-1 --acl bucket-owner-full-control
