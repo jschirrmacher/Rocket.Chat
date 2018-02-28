@@ -1,9 +1,10 @@
 node('Build') {
   stage('Checkout') {
-    BRANCH=${GIT_BRANCH#*/}
-    git fetch
-    git checkout ${BRANCH}
-    git pull origin ${BRANCH}
+    // BRANCH=${GIT_BRANCH#*/}
+    // git fetch
+    // git checkout ${BRANCH}
+    // git pull origin ${BRANCH}
+    echo sh(returnStdout: true, script: 'env')
   }
 
   stage('Preparation'){
