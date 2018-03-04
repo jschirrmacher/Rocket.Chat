@@ -69,30 +69,6 @@
 		}
 	}
 
-	&__textarea {
-		 width: 100%;
-
-		 color: var(--input-text-color);
-
-		 border-width: var(--input-border-width);
-
-		 border-color: var(--input-border-color);
-
-		 border-radius: var(--input-border-radius);
-
-		 background-color: transparent;
-
-		 font: inherit;
-
-		 resize: none;
-
-		 max-height: 300px;
-
-		 &::placeholder {
-	 		color: var(--input-placeholder-color);
- 		 }
-	 }
-
 	&__description {
 		margin-bottom: 0.25rem;
 
