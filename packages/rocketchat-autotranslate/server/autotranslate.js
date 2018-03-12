@@ -1,20 +1,10 @@
 import _ from 'underscore';
 import s from 'underscore.string';
 
-class AutoTranslate {
+export class AutoTranslate {
 	constructor() {
 		this.languages = [];
-		this.enabled = RocketChat.settings.get('AutoTranslate_Enabled');
-		this.apiKey = RocketChat.settings.get('AutoTranslate_GoogleAPIKey');
 		this.supportedLanguages = {};
-		RocketChat.callbacks.add('afterSaveMessage', this.translateMessage.bind(this), RocketChat.callbacks.priority.MEDIUM, 'AutoTranslate');
-
-		RocketChat.settings.get('AutoTranslate_Enabled', (key, value) => {
-			this.enabled = value;
-		});
-		RocketChat.settings.get('AutoTranslate_GoogleAPIKey', (key, value) => {
-			this.apiKey = value;
-		});
 	}
 
 	tokenize(message) {
@@ -146,11 +136,93 @@ class AutoTranslate {
 		return message.msg;
 	}
 
+	getSupportedLanguages(target) {
+		if (this.enabled && this.apiKey) {
+			if (this.supportedLanguages[target]) {
+				return this.supportedLanguages[target];
+			}
+
+			let result;
+			const params = {key: this.apiKey};
+			if (target) {
+				params.target = target;
+			}
+
+			try {
+				result = HTTP.get('https://translation.googleapis.com/language/translate/v2/languages', {params});
+			} catch (e) {
+				if (e.response && e.response.statusCode === 400 && e.response.data && e.response.data.error && e.response.data.error.status === 'INVALID_ARGUMENT') {
+					params.target = 'en';
+					target = 'en';
+					if (!this.supportedLanguages[target]) {
+						result = HTTP.get('https://translation.googleapis.com/language/translate/v2/languages', {params});
+					}
+				}
+			} finally {
+				if (this.supportedLanguages[target]) {
+					return this.supportedLanguages[target];
+				} else {
+					this.supportedLanguages[target || 'en'] = result && result.data && result.data.data && result.data.data.languages;
+					return this.supportedLanguages[target || 'en'];
+				}
+			}
+		}
+	}
+
+	// get translation service provider is abstract requires implementation
+	_getProviderMetadata() {
+	}
+
+}
+
+class GoogleAutoTranslate extends AutoTranslate {
+	/**
+	 * Constructor
+	 */
+	constructor() {
+		super();
+		this.apiKey = RocketChat.settings.get('AutoTranslate_GoogleAPIKey');
+		this.apiEndPointURL = 'https://translation.googleapis.com/language/translate/v2';
+		this.enabled = RocketChat.settings.get('AutoTranslate_Enabled');
+		this.supportedLanguages = {};
+		RocketChat.settings.get('AutoTranslate_Enabled', (key, value) => {
+			this.enabled = value;
+		});
+		RocketChat.settings.get('AutoTranslate_GoogleAPIKey', (key, value) => {
+			this.apiKey = value;
+		});
+		RocketChat.callbacks.add('afterSaveMessage', this.translateMessage.bind(this), RocketChat.callbacks.priority.MEDIUM, 'GoogleAutoTranslate');
+	}
+
+	/**
+	 * Returns necessary settings information
+	 * about the translation service provider.
+	 * @protected
+	 */
+	_getSettings() {
+		return {
+			apiKey: this.apiKey,
+			apiEndPointURL: this.apiEndPointURL
+		};
+	}
+
+	/**
+	 * Returns metadata information about the service provide
+	 * @protected implements super abstract method.
+	 */
+	_getProviderMetadata() {
+		return {
+			name: 'google-translate',
+			displayName: 'Google Translate',
+			settings: this._getSettings()
+		};
+	}
+
 	translateMessage(message, room, targetLanguage) {
 		if (this.enabled && this.apiKey) {
 			let targetLanguages;
 			if (targetLanguage) {
-				targetLanguages = [ targetLanguage ];
+				targetLanguages = [targetLanguage];
 			} else {
 				targetLanguages = RocketChat.models.Subscriptions.getAutoTranslateLanguagesByRoomAndNotUser(room._id, message.u && message.u._id);
 			}
@@ -168,19 +240,24 @@ class AutoTranslate {
 
 					const supportedLanguages = this.getSupportedLanguages('en');
 					targetLanguages.forEach(language => {
-						if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
+						if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 							language = language.substr(0, 2);
 						}
 						let result;
 						try {
-							result = HTTP.get('https://translation.googleapis.com/language/translate/v2', { params: { key: this.apiKey, target: language }, query });
+							result = HTTP.get('https://translation.googleapis.com/language/translate/v2', {
+								params: {
+									key: this.apiKey,
+									target: language
+								}, query
+							});
 						} catch (e) {
 							console.log('Error translating message', e);
 							return message;
 						}
 						if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
 							const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
-							translations[language] = this.deTokenize(Object.assign({}, targetMessage, { msg: txt }));
+							translations[language] = this.deTokenize(Object.assign({}, targetMessage, {msg: txt}));
 						}
 					});
 					if (!_.isEmpty(translations)) {
@@ -199,10 +276,15 @@ class AutoTranslate {
 								const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
 								const supportedLanguages = this.getSupportedLanguages('en');
 								targetLanguages.forEach(language => {
-									if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
+									if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 										language = language.substr(0, 2);
 									}
-									const result = HTTP.get('https://translation.googleapis.com/language/translate/v2', { params: { key: this.apiKey, target: language }, query });
+									const result = HTTP.get('https://translation.googleapis.com/language/translate/v2', {
+										params: {
+											key: this.apiKey,
+											target: language
+										}, query
+									});
 									if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
 										const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
 										translations[language] = txt;
@@ -220,38 +302,198 @@ class AutoTranslate {
 		return message;
 	}
 
+}
+
+class DeeplAutoTranslate extends AutoTranslate {
+	/**
+	 * Constructor
+	 */
+	constructor() {
+		super();
+		this.apiKey = RocketChat.settings.get('DeepL_translate_API_Key');
+		this.apiEndPointURL = 'https://api.deepl.com/v1/translate';
+		this.enabled = RocketChat.settings.get('DeepL_translate_Enabled');
+		this.supportedLanguages = {
+			'languages': [
+				{
+					'language': 'en'
+				},
+				{
+					'language': 'fr'
+				},
+				{
+					'language': 'zh-CN'
+				}
+			]
+		};
+		RocketChat.settings.get('DeepL_translate_Enabled', (key, value) => {
+			this.enabled = value;
+		});
+		RocketChat.settings.get('DeepL_translate_API_Key', (key, value) => {
+			this.apiKey = value;
+		});
+		RocketChat.callbacks.add('afterSaveMessage', this.translateMessage.bind(this), RocketChat.callbacks.priority.MEDIUM, 'DeepLAutoTranslate');
+	}
+
+	/**
+	 * Returns necessary settings information
+	 * about the translation service provider.
+	 * @protected
+	 */
+	_getSettings() {
+		return {
+			apiKey: this.apiKey,
+			apiEndPointURL: this.apiEndPointURL
+		};
+	}
+
+	/**
+	 * Returns metadata information about the service provide
+	 * @protected implements super abstract method.
+	 */
+	_getProviderMetadata() {
+		return {
+			name: 'deepl-translate',
+			displayName: 'DeepL Translate',
+			settings: this._getSettings()
+		};
+	}
+
+	/**
+	 * Return supported languages for translation
+	 */
 	getSupportedLanguages(target) {
+		console.log(target);
 		if (this.enabled && this.apiKey) {
-			if (this.supportedLanguages[target]) {
-				return this.supportedLanguages[target];
-			}
-
-			let result;
-			const params = { key: this.apiKey };
-			if (target) {
-				params.target = target;
-			}
-
-			try {
-				result = HTTP.get('https://translation.googleapis.com/language/translate/v2/languages', { params });
-			} catch (e) {
-				if (e.response && e.response.statusCode === 400 && e.response.data && e.response.data.error && e.response.data.error.status === 'INVALID_ARGUMENT') {
-					params.target = 'en';
-					target = 'en';
-					if (!this.supportedLanguages[target]) {
-						result = HTTP.get('https://translation.googleapis.com/language/translate/v2/languages', { params });
+			if (this.supportedLanguages) {
+				return [
+					{
+						'language': 'en'
+					},
+					{
+						'language': 'fr'
+					},
+					{
+						'language': 'de'
 					}
-				}
-			} finally {
-				if (this.supportedLanguages[target]) {
-					return this.supportedLanguages[target];
-				} else {
-					this.supportedLanguages[target || 'en'] = result && result.data && result.data.data && result.data.data.languages;
-					return this.supportedLanguages[target || 'en'];
-				}
+				];
 			}
 		}
 	}
+
+	translateMessage(message, room, targetLanguage) {
+		if (this.enabled && this.apiKey) {
+			let targetLanguages;
+			if (targetLanguage) {
+				targetLanguages = [targetLanguage];
+			} else {
+				targetLanguages = RocketChat.models.Subscriptions.getAutoTranslateLanguagesByRoomAndNotUser(room._id, message.u && message.u._id);
+			}
+			if (message.msg) {
+				Meteor.defer(() => {
+					const translations = {};
+					let targetMessage = Object.assign({}, message);
+
+					targetMessage.html = s.escapeHTML(String(targetMessage.msg));
+					targetMessage = this.tokenize(targetMessage);
+
+					let msgs = targetMessage.msg.split('\n');
+					msgs = msgs.map(msg => encodeURIComponent(msg));
+					const query = `text=${ msgs.join('&text=') }`;
+
+					const supportedLanguages = this.getSupportedLanguages('en');
+					targetLanguages.forEach(language => {
+						if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+							language = language.substr(0, 2);
+						}
+						let result;
+						try {
+							result = HTTP.get('https://api.deepl.com/v1/translate', {
+								params: {
+									auth_key: this.apiKey,
+									target_lang: language
+								}, query
+							});
+						} catch (e) {
+							console.log('Error translating message', e);
+							return message;
+						}
+						if (result.statusCode === 200 && result.data && result.data.translations && Array.isArray(result.data.translations) && result.data.translations.length > 0) {
+							const txt = result.data.translations.map(translation => translation.text).join('\n');
+							translations[language] = this.deTokenize(Object.assign({}, targetMessage, {msg: txt}));
+						}
+					});
+					if (!_.isEmpty(translations)) {
+						RocketChat.models.Messages.addTranslations(message._id, translations);
+					}
+				});
+			}
+
+			if (message.attachments && message.attachments.length > 0) {
+				Meteor.defer(() => {
+					for (const index in message.attachments) {
+						if (message.attachments.hasOwnProperty(index)) {
+							const attachment = message.attachments[index];
+							const translations = {};
+							if (attachment.description || attachment.text) {
+								const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
+								const supportedLanguages = this.getSupportedLanguages('en');
+								targetLanguages.forEach(language => {
+									if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+										language = language.substr(0, 2);
+									}
+									const result = HTTP.get('https://api.deepl.com/v1/translate', {
+										params: {
+											key: this.apiKey,
+											target: language
+										}, query
+									});
+									if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
+										const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
+										translations[language] = txt;
+									}
+								});
+								if (!_.isEmpty(translations)) {
+									RocketChat.models.Messages.addAttachmentTranslations(message._id, index, translations);
+								}
+							}
+						}
+					}
+				});
+			}
+		}
+		return message;
+	}
 }
 
-RocketChat.AutoTranslate = new AutoTranslate;
+export class TranslationProviderRegistry {
+	static registerProvider(provider) {
+		//get provider information
+		const metadata = provider._getProviderMetadata();
+		if (!TranslationProviderRegistry._providers) {
+			TranslationProviderRegistry._providers = {};
+		}
+		TranslationProviderRegistry._providers[metadata.name] = provider;
+	}
+
+	static setActiveServiceProvider(name) {
+		if (TranslationProviderRegistry._providers[name]) {
+			TranslationProviderRegistry._activeProvider = TranslationProviderRegistry._providers[name];
+		}
+	}
+
+	static getActiveServiceProvider() {
+		if (!TranslationProviderRegistry._activeProvider) {
+			TranslationProviderRegistry._activeProvider = TranslationProviderRegistry._providers['deepl-translate'];
+		}
+		return TranslationProviderRegistry._activeProvider;
+	}
+}
+
+
+Meteor.startup(() => {
+	TranslationProviderRegistry.registerProvider(new GoogleAutoTranslate());
+	TranslationProviderRegistry.registerProvider(new DeeplAutoTranslate());
+	RocketChat.AutoTranslate = TranslationProviderRegistry.getActiveServiceProvider();
+});
+//RocketChat.AutoTranslate = new AutoTranslate;
