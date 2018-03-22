@@ -226,6 +226,7 @@ jobs:
     environment:
       TEST_MODE: "true"
       MONGO_URL: mongodb://localhost:27017/testsmarti
+      MONGO_OPLOG_URL: mongodb://localhost:27017/local
 
     steps:
       - attach_workspace:
