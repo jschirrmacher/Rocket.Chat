@@ -325,7 +325,7 @@ workflows:
           requires:
             - test-with-oplog
             # - test-without-oplog
-            # - test-smarti
+            - test-smarti
           filters:
             branches:
               only:
