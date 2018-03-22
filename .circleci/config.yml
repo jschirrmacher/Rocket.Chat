@@ -218,10 +218,10 @@ jobs:
       - image: circleci/mongo:3.4
         command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
       - image: assisitfy/smarti:0.7.0-RC1
+        entrypoint: "curl https://repo1.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.8.0/stanford-corenlp-3.8.0.jar -o, /opt/ext/stanford-corenlp-3.8.0.jar -s && curl https://repo1.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.8.0/stanford-corenlp-3.8.0-models-german.jar -o /opt/ext/stanford-corenlp-3.8.0-models-german.jar -s && /opt/smarti.sh"
         environment:
           - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/smarti
           - SECURITY_CONFIG_MONGO_ADMIN-PASSWORD=admin
-        command: [curl, "https://repo1.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.8.0/stanford-corenlp-3.8.0.jar", -o, /opt/ext/stanford-corenlp-3.8.0.jar, , -s, &&, curl, "https://repo1.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.8.0/stanford-corenlp-3.8.0-models-german.jar", -o, /opt/ext/stanford-corenlp-3.8.0-models-german.jar, -s]
 
     environment:
       TEST_MODE: "true"
