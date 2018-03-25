@@ -142,7 +142,8 @@ jobs:
       - image: circleci/node:8-browsers
       - image: mongo:3.4
         command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
-
+    ulimits:
+        core: -1
     environment:
       TEST_MODE: "true"
       MONGO_URL: mongodb://localhost:27017/testwithoplog
@@ -186,6 +187,8 @@ jobs:
     docker:
       - image: circleci/node:8-browsers
       - image: circleci/mongo:3.4
+    ulimits:
+      core: -1
 
     environment:
       TEST_MODE: "true"
@@ -217,6 +220,8 @@ jobs:
       - image: circleci/node:8-browsers
       - image: circleci/mongo:3.4
       - image: assisitfy/smarti:0.7.0-RC1
+    ulimits:
+        core: -1
 
     environment:
       TEST_MODE: "true"
