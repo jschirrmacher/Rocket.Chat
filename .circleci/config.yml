@@ -6,7 +6,7 @@ jobs:
   build:
     <<: *defaults
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:8.9.4-browsers
 
     steps:
       - checkout
@@ -139,11 +139,11 @@ jobs:
   test-with-oplog:
     <<: *defaults
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:8.9.4-browsers
       - image: mongo:3.4
         command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
-    ulimits:
-        core: -1
+    # ulimits:
+    #     core: -1
     environment:
       TEST_MODE: "true"
       MONGO_URL: mongodb://localhost:27017/testwithoplog
@@ -185,10 +185,10 @@ jobs:
   test-without-oplog:
     <<: *defaults
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:8.9.4-browsers
       - image: circleci/mongo:3.4
-    ulimits:
-      core: -1
+    # ulimits:
+    #   core: -1
 
     environment:
       TEST_MODE: "true"
@@ -217,7 +217,7 @@ jobs:
   test-smarti:
     <<: *defaults
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:8.9.4-browsers
       - image: circleci/mongo:3.4
         command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
       - image: assisitfy/smarti:0.7.0
@@ -225,8 +225,8 @@ jobs:
           - DOWNLOAD_NLP_LIBS=true
           - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/smarti
           - SECURITY_CONFIG_MONGO_ADMIN-PASSWORD=admin
-    ulimits:
-        core: -1
+    # ulimits:
+    #     core: -1
 
     environment:
       TEST_MODE: "true"
