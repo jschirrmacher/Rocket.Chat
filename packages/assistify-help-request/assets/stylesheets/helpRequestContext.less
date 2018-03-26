@@ -46,32 +46,31 @@
 			}
 		}
 	}
-}
+    &.rc-input__textarea {
+		width: 100%;
 
-& .rc-input__textarea {
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
+	    height: 45px;
 
-  width: 100%;
+	    padding: 0.75rem 1rem 0.75rem 2.75rem;
 
-  height: 45px;
+		color: var(--input-text-color);
 
-  color: var(--input-text-color);
+		border-width: var(--input-border-width);
 
-  border-width: var(--input-border-width);
+		border-color: var(--input-border-color);
 
-  border-color: var(--input-border-color);
+		border-radius: var(--input-border-radius);
 
-  border-radius: var(--input-border-radius);
+	    background-color: transparent;
 
-  background-color: transparent;
+		font: inherit;
 
-  font: inherit;
+		resize: none;
 
-  resize: none;
+		max-height: 250px;
 
-  max-height: 250px;
-
-  &::placeholder {
-	color: var(--input-placeholder-color);
-  }
+		&::placeholder {
+	  		color: var(--input-placeholder-color);
+		}
+  	}
 }
