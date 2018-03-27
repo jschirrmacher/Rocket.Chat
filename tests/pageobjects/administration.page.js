@@ -9,6 +9,7 @@ class Administration extends Page {
 	get roomsLink() { return browser.element('.flex-nav [href="/admin/rooms"]'); }
 	get usersLink() { return browser.element('.flex-nav [href="/admin/users"]'); }
 	get accountsLink() { return browser.element('.flex-nav [href="/admin/Accounts"]'); }
+	get messageLink() { return browser.element('.flex-nav [href="/admin/Message"]'); }
 	get generalLink() { return browser.element('.flex-nav [href="/admin/General"]'); }
 	get permissionsLink() { return browser.element('.flex-nav [href="/admin/permissions"]'); }
 	get customScriptBtn() { return browser.element('.section:nth-of-type(6) .collapse'); }
@@ -219,6 +220,15 @@ class Administration extends Page {
 
 	get accountsUsernameChangeTrue() { return browser.element('label:nth-of-type(1) [name="Accounts_AllowUsernameChange"]'); }
 	get accountsUsernameChangeFalse() { return browser.element('label:nth-of-type(2) [name="Accounts_AllowUsernameChange"]'); }
+
+	//Message settings
+	get messageButtonExpandAutotranslate() { return browser.element('.section:nth-of-type(3) .button.expand'); }
+	get messageButtonExpandGoogleMaps() { return browser.element('.section:nth-of-type(4) .button.expand'); }
+	get messageButtonCollapseAutotranslate() { return browser.element('.section:nth-of-type(3) .button.collapse'); }
+	get messageAutoTranslateEnable() { return browser.element('[name="AutoTranslate_Enabled"]'); }
+	get messageAutoTranslateProvider() { return browser.element('[name="AutoTranslate_ServiceProvider"]'); }
+	get messageAutoTranslateAPIKey() { return browser.element('[name=AutoTranslate_APIKey]'); }
+
 
 	checkUserList(user) {
 		const element = browser.element(`td=adminCreated${ user }`);
