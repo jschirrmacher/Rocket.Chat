@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Build Rocket.Chat
           command: |
-            if [[ $CIRCLE_TAG ]]; then meteor reset; fi
+            if [[ $CIRCLE_TAG ]] || [[ $CIRCLE_BRANCH == "develop" ]] || [[ $CIRCLE_BRANCH == "master" ]]; then meteor reset; fi
             set +e
             meteor add rocketchat:lib
             set -e
@@ -230,7 +230,6 @@ jobs:
           - SMARTI_PROCESSING_NUMTHREADS=1
           - NLP_STANFORDNLP_DE_PARSEMAXLEN=20
           - NLP_STANFORDNLP_DE_PARSEMODEL=edu/stanford/nlp/models/lexparser/germanPCFG.ser.gz
-
     # ulimits:
     #     core: -1
 
@@ -310,19 +309,19 @@ workflows:
       - build:
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$
       - test-with-oplog:
           requires:
             - build
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$
       - test-without-oplog:
           requires:
             - build
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$
             branches:
               only:
                 - circle-without-oplog
@@ -331,7 +330,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$
             branches:
               only:
                 - circle-smarti
@@ -346,5 +345,5 @@ workflows:
                 - develop
                 - master
             tags:
-              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$
 

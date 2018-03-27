@@ -183,6 +183,7 @@ Package.onUse(function(api) {
 	api.addFiles('server/methods/unblockUser.js', 'server');
 	api.addFiles('server/methods/updateMessage.js', 'server');
 	api.addFiles('server/methods/globalAnnouncement.js', 'server');
+	api.addFiles('server/methods/getCurrentMessageRouteLink.js', 'server');
 
 	// SERVER STARTUP
 	api.addFiles('server/startup/settingsOnLoadCdnPrefix.js', 'server');
@@ -209,7 +210,7 @@ Package.onUse(function(api) {
 	api.addFiles('client/lib/Layout.js', 'client');
 
 	// COMMON ROUTES
-	api.addFiles('startup/routes.js');
+	api.addFiles('lib/routes.js'); // those routes might be used on the server to calculate a URL
 
 	// CLIENT METHODS
 	api.addFiles('client/methods/sendMessage.js', 'client');
