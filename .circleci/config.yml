@@ -226,7 +226,7 @@ jobs:
           - SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/smarti
           - SECURITY_CONFIG_MONGO_ADMIN-PASSWORD=admin
           # Optimize Smarti for a small memory footprint
-          - JAVA_OPTS='-Xms1024m -Xmx2g -Xmx12288m'
+          - JAVA_OPTS='-Xms1024m -Xmx2g'
           - SMARTI_PROCESSING_NUMTHREADS=1
           - NLP_STANFORDNLP_DE_PARSEMAXLEN=15
           - NLP_STANFORDNLP_DE_PARSEMODEL=edu/stanford/nlp/models/lexparser/germanPCFG.ser.gz
