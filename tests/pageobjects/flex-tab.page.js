@@ -103,6 +103,14 @@ class FlexTab extends Page {
 
 	getUserEl(username) { return browser.element(`.flex-tab button[title="${ username }"] > p`); }
 
+	// auto translate menu
+	get autoTranslateTab() { return browser.element('.rc-popover__item[data-id=autotranslate]'); }
+	get autoTranslateToggle() { return browser.element('.input.checkbox.toggle'); }
+	get autoTranslateToggleValue() { return browser.element('[id="autoTranslate"]'); }
+	get autoTranslateShowLanguages() { return browser.element('.icon-pencil[data-edit=autoTranslateLanguage]'); }
+	get autoTranslateChooseLanguage() { return browser.element('[name="autoTranslateLanguage"]'); }
+	get autoTranslateSave() { return browser.element('.save'); }
+
 	archiveChannel() {
 		this.archiveBtn.waitForVisible();
 		this.archiveBtn.click();
