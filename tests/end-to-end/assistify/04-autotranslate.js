@@ -86,6 +86,7 @@ describe('[Auto Translate]', function() {
 						admin.messageAutoTranslateAPIKey.getValue().should.equal(process.env.DEEPL_CONNECTION_KEY);
 					});
 					it('save changes', () => {
+						browser.pause(1000);
 						if (admin.buttonSave.isEnabled()) {
 							admin.adminSaveChanges();
 						}
