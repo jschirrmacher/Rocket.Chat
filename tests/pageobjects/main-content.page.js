@@ -69,78 +69,25 @@ class MainContent extends Page {
 	}
 
 	// Messages
-	get lastMessageUser() {
-		return browser.element('.message:last-child .user-card-message:nth-of-type(2)');
-	}
-
-	get lastMessage() {
-		return browser.element('.message:last-child .body');
-	}
-
-	get lastMessageDesc() {
-		return browser.element('.message:last-child .body .attachment-description');
-	}
-
-	get lastMessageRoleAdded() {
-		return browser.element('.message:last-child.subscription-role-added .body');
-	}
-
-	get beforeLastMessage() {
-		return browser.element('.message:nth-last-child(2) .body');
-	}
-
-	get lastMessageUserTag() {
-		return browser.element('.message:last-child .role-tag');
-	}
-
-	get lastMessageImg() {
-		return browser.element('.message:last-child .attachment-image img');
-	}
-
-	get lastMessageTextAttachment() {
-		return browser.element('.message:last-child .attachment-text');
-	}
-
-	get messageOptionsBtn() {
-		return browser.element('.message:last-child .message-actions__menu');
-	}
-
-	get messageActionMenu() {
-		return browser.element('.rc-popover .rc-popover__content');
-	}
-
-	get messageReply() {
-		return browser.element('[data-id="reply-message"][data-type="message-action"]');
-	}
-
-	get messageEdit() {
-		return browser.element('[data-id="edit-message"][data-type="message-action"]');
-	}
-
-	get messageDelete() {
-		return browser.element('[data-id="delete-message"][data-type="message-action"]');
-	}
-
-	get messagePermalink() {
-		return browser.element('[data-id="permalink"][data-type="message-action"]');
-	}
-
-	get messageCopy() {
-		return browser.element('[data-id="copy"][data-type="message-action"]');
-	}
-
-	get messageQuote() {
-		return browser.element('[data-id="quote-message"][data-type="message-action"]');
-	}
-
-	get messageStar() {
-		return browser.element('[data-id="star-message"][data-type="message-action"]');
-	}
-
-	get messageUnread() {
-		return browser.element('[data-id="mark-message-as-unread"][data-type="message-action"]');
-	}
-
+	get lastMessageUser() { return browser.element('.message:last-child .user-card-message:nth-of-type(2)'); }
+	get lastMessage() { return browser.element('.message:last-child .body'); }
+	get lastMessageDesc() { return browser.element('.message:last-child .body .attachment-description'); }
+	get lastMessageRoleAdded() { return browser.element('.message:last-child.subscription-role-added .body'); }
+	get beforeLastMessage() { return browser.element('.message:nth-last-child(2) .body'); }
+	get lastMessageUserTag() { return browser.element('.message:last-child .role-tag'); }
+	get lastMessageImg() { return browser.element('.message:last-child .attachment-image img'); }
+	get lastMessageTextAttachment() { return browser.element('.message:last-child .attachment-text'); }
+	get messageOptionsBtn() { return browser.element('.message:last-child .message-actions__menu'); }
+	get messageActionMenu() { return browser.element('.rc-popover .rc-popover__content'); }
+	get messageReply() { return browser.element('[data-id="reply-message"][data-type="message-action"]'); }
+	get messageThread() { return browser.element('[data-id="start-thread"][data-type="message-action"]'); }
+	get messageEdit() { return browser.element('[data-id="edit-message"][data-type="message-action"]'); }
+	get messageDelete() { return browser.element('[data-id="delete-message"][data-type="message-action"]'); }
+	get messagePermalink() { return browser.element('[data-id="permalink"][data-type="message-action"]'); }
+	get messageCopy() { return browser.element('[data-id="copy"][data-type="message-action"]'); }
+	get messageQuote() { return browser.element('[data-id="quote-message"][data-type="message-action"]'); }
+	get messageStar() { return browser.element('[data-id="star-message"][data-type="message-action"]'); }
+	get messageUnread() { return browser.element('[data-id="mark-message-as-unread"][data-type="message-action"]'); }
 	// get messageReaction() { return browser.element('.message-actions__button[data-message-action="reaction-message"]'); }
 	get messagePin() {
 		return browser.element('[data-id="pin-message"][data-type="message-action"]');
@@ -335,6 +282,10 @@ class MainContent extends Page {
 	// Do one of the message actions, based on the "action" parameter inserted.
 	selectAction(action) {
 		switch (action) {
+			case 'thread':
+				this.messageThread.waitForVisible(5000);
+				this.messageThread.click();
+				break;
 			case 'edit':
 				this.messageEdit.waitForVisible(5000);
 				this.messageEdit.click();

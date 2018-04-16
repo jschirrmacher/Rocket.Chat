@@ -108,7 +108,7 @@ Template.AssistifyCreateRequest.events({
 		const openingQuestion = instance.openingQuestion.get();
 		if (expertise) {
 			instance.titleError.set(null);
-			Meteor.call('createRequest', requestTitle, expertise, openingQuestion, (err, result) => {
+			Meteor.call('createRequestFromExpertise', requestTitle, expertise, openingQuestion, (err, result) => {
 				if (err) {
 					console.log(err);
 					switch (err.error) {
@@ -130,7 +130,6 @@ Template.AssistifyCreateRequest.events({
 							return handleError(err);
 					}
 				}
-				console.log('Room Created');
 				// toastr.success(TAPi18n.__('New_request_created'));
 				const roomCreated = RocketChat.models.Rooms.findOne({_id: result.rid});
 				FlowRouter.go('request', {name: roomCreated.name}, FlowRouter.current().queryParams);
@@ -141,9 +140,9 @@ Template.AssistifyCreateRequest.events({
 
 Template.AssistifyCreateRequest.onRendered(function() {
 	const instance = this;
-	const expertiseElement = this.find('input[name="expertise"]');
-	const titleElement = this.find('input[name="request_title"]');
-	const questionElement = this.find('input[name="first_question"]');
+	const expertiseElement = this.find('#expertise-search');
+	const titleElement = this.find('#request_title');
+	const questionElement = this.find('#first_question');
 
 	instance.ac.element = expertiseElement;
 	instance.ac.$element = $(instance.ac.element);
