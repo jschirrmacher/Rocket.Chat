@@ -20,14 +20,19 @@ Meteor.startup(function() {
 		i18nLabel: 'AutoTranslate_ServiceProvider',
 		public: true
 	});
-	RocketChat.settings.add('AutoTranslate_APIKey', '', {
-		type: 'string',
-		group: 'Message',
-		section: 'AutoTranslate',
-		public: true,
-		enableQuery: [
-			{
-				_id: 'AutoTranslate_Enabled', value: true
-			}]
-	});
+
+	if (RocketChat.models.Settings.findById('AutoTranslate_GoogleAPIKey').count()) {
+		RocketChat.models.Settings.renameSetting('AutoTranslate_GoogleAPIKey', 'AutoTranslate_APIKey');
+	} else {
+		RocketChat.settings.add('AutoTranslate_APIKey', '', {
+			type: 'string',
+			group: 'Message',
+			section: 'AutoTranslate',
+			public: true,
+			enableQuery: [
+				{
+					_id: 'AutoTranslate_Enabled', value: true
+				}]
+		});
+	}
 });

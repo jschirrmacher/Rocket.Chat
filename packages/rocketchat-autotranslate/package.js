@@ -29,6 +29,7 @@ Package.onUse(function(api) {
 		'server/autotranslate.js',
 		'server/googleTranslate.js',
 		'server/models/Messages.js',
+		'server/models/Settings.js',
 		'server/models/Subscriptions.js',
 		'server/methods/saveSettings.js',
 		'server/methods/translateMessage.js',

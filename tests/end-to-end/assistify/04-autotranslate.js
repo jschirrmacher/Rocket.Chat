@@ -19,7 +19,7 @@ function setTranslationPreferences(language) {
 		flexTab.autoTranslateTab.waitForVisible(1000);
 		flexTab.autoTranslateTab.isVisible().should.equal(true);
 		flexTab.autoTranslateTab.click();
-		browser.pause(5000);
+		browser.pause(3000);
 	});
 	it('activate automatic translation', () => {
 		flexTab.autoTranslateToggle.isVisible().should.equal(true);
@@ -27,17 +27,17 @@ function setTranslationPreferences(language) {
 			flexTab.autoTranslateToggle.click();
 		}
 		flexTab.autoTranslateToggleValue.isSelected().should.equal(true);
-		browser.pause(5000);
+		browser.pause(3000);
 	});
 	it('choose Language to be used for translation', () => {
 		flexTab.autoTranslateShowLanguages.click();
 		flexTab.autoTranslateChooseLanguage.click('option=' + language);
 		flexTab.autoTranslateChooseLanguage.getValue().should.equal(language);
-		browser.pause(5000);
+		browser.pause(3000);
 	});
 	it('save & close preferences', () => {
 		flexTab.autoTranslateSave.click();
-		browser.pause(5000);
+		browser.pause(3000);
 	});
 }
 
@@ -49,9 +49,8 @@ describe('[Auto Translate]', function() {
 		});
 		describe('[Translation Settings]', function() {
 			before(function() {
-				sideNav.accountMenu.click();
-				sideNav.admin.waitForVisible(5000);
-				sideNav.admin.click();
+				sideNav.sidebarMenu.click();
+				sideNav.popOverContent.click();
 			});
 			describe('[Section: Message]', function() {
 				before(() => {
@@ -76,6 +75,7 @@ describe('[Auto Translate]', function() {
 					it('select provider', () => {
 						if (admin.messageAutoTranslateEnable.isSelected() && admin.messageAutoTranslateProvider.isVisible()) {
 							admin.messageAutoTranslateProvider.click('option=DeepL');
+							browser.pause(1000);
 						}
 						admin.messageAutoTranslateProvider.getValue().should.equal('deepl-translate');
 					});
