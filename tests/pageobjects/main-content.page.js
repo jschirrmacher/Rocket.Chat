@@ -170,13 +170,8 @@ class MainContent extends Page {
 	}
 
 	// Landing Page
-	get GlobalAnnouncement() {
-		return browser.element('#rocket-chat > div.rc-old.main-content.content-background-color > section > div > div');
-	}
-
-	get GlobalAnnouncementBtn() {
-		return browser.element('#rocket-chat > div.rc-old.main-content.content-background-color > section > div > div > button');
-	}
+	get GlobalAnnouncement() { return browser.element('.global-announcement'); }
+	get GlobalAnnouncementBtn() { return browser.element('.global-announcement > button'); }
 
 	// Settings based permissions elements
 	get manageSettingsPerm() {
