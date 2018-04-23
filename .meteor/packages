@@ -190,5 +190,5 @@ assistify:defaults
 chatpal:search
 rocketchat:version-check
 meteorhacks:aggregate
-deepl:translation
+assistify:deepl-translation
 overture8:wordcloud2

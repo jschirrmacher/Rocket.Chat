@@ -1,3 +1,6 @@
+import s from 'underscore.string';
+import _ from 'underscore';
+
 export class AutoTranslate {
 	constructor() {
 		this.languages = [];
@@ -141,6 +144,66 @@ export class AutoTranslate {
 		return message.msg;
 	}
 
+	translateMessage(message, room, targetLanguage) {
+		if (this.autoTranslateEnabled && this.apiKey) {
+			let targetLanguages;
+			if (targetLanguage) {
+				targetLanguages = [targetLanguage];
+			} else {
+				targetLanguages = RocketChat.models.Subscriptions.getAutoTranslateLanguagesByRoomAndNotUser(room._id, message.u && message.u._id);
+			}
+			if (message.msg) {
+				Meteor.defer(() => {
+					let targetMessage = Object.assign({}, message);
+					targetMessage.html = s.escapeHTML(String(targetMessage.msg));
+					targetMessage = this.tokenize(targetMessage);
+					const translations = this.issueTranslateRequestMessage(targetMessage, targetLanguages);
+					if (!_.isEmpty(translations)) {
+						RocketChat.models.Messages.addTranslations(message._id, translations);
+					}
+				});
+			}
+
+			if (message.attachments && message.attachments.length > 0) {
+				Meteor.defer(() => {
+					for (const index in message.attachments) {
+						if (message.attachments.hasOwnProperty(index)) {
+							const attachment = message.attachments[index];
+							if (attachment.description || attachment.text) {
+								const translations = this.issueTranslateRequestMessageAttachments(attachment, targetLanguages)
+								if (!_.isEmpty(translations)) {
+									RocketChat.models.Messages.addAttachmentTranslations(message._id, index, translations);
+								}
+							}
+						}
+					}
+				});
+			}
+		}
+		return message;
+	}
+
+	/*
+	 * abstract method must be implemented
+	 * @params : targetMessage, targetLanguages
+	 * @returns response message from the service provider
+	 * @public
+	 */
+	issueTranslateRequestMessage() {
+
+	}
+
+	/*
+ 	 * abstract method must be implemented
+ 	 * @params : message, targetLanguages
+     * @returns response message from the service provider
+     * @public
+     */
+	issueTranslateRequestMessageAttachments() {
+
+	}
+
+
 	// abstract method must be implemented
 	getSupportedLanguages() {
 
@@ -150,9 +213,6 @@ export class AutoTranslate {
 	_getProviderMetadata() {
 	}
 
-	// abstract method must be implemented.
-	translateMessage() {
-	}
 
 	// Registers afterSaveMessage based on the selected service provider.
 	registerAfterSaveMsgCallBack(name) {

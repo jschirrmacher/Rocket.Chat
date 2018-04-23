@@ -1,5 +1,5 @@
 Package.describe({
-	name: 'deepl:translation',
+	name: 'assistify:deepl-translation',
 	version: '0.0.1',
 	// Brief, one-line summary of the package.
 	summary: 'Empowers RocketChat by integrating DEEPL text translation engine',

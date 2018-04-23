@@ -41,7 +41,6 @@ RocketChat.AutoTranslate = {
 		Meteor.call('autoTranslate.getSupportedLanguages', 'en', (err, languages) => {
 			this.supportedLanguages = languages || [];
 		});
-
 		Tracker.autorun(() => {
 			if (RocketChat.settings.get('AutoTranslate_Enabled') && RocketChat.authz.hasAtLeastOnePermission(['auto-translate'])) {
 				RocketChat.callbacks.add('renderMessage', (message) => {
@@ -110,5 +109,7 @@ RocketChat.AutoTranslate = {
 };
 
 Meteor.startup(function() {
-	RocketChat.AutoTranslate.init();
+	Meteor.defer(function() {
+		RocketChat.AutoTranslate.init();
+	});
 });

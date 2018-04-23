@@ -50,7 +50,6 @@ class GoogleAutoTranslate extends AutoTranslate {
 			if (this.supportedLanguages[target]) {
 				return this.supportedLanguages[target];
 			}
-
 			let result;
 			const params = {key: this.apiKey};
 			if (target) {
@@ -78,90 +77,56 @@ class GoogleAutoTranslate extends AutoTranslate {
 		}
 	}
 
-	translateMessage(message, room, targetLanguage) {
-		if (this.autoTranslateEnabled && this.apiKey) {
-			let targetLanguages;
-			if (targetLanguage) {
-				targetLanguages = [targetLanguage];
-			} else {
-				targetLanguages = RocketChat.models.Subscriptions.getAutoTranslateLanguagesByRoomAndNotUser(room._id, message.u && message.u._id);
+	issueTranslateRequestMessage(targetMessage, targetLanguages) {
+		const translations = {};
+		let msgs = targetMessage.msg.split('\n');
+		msgs = msgs.map(msg => encodeURIComponent(msg));
+		const query = `q=${ msgs.join('&q=') }`;
+		const supportedLanguages = this.getSupportedLanguages('en');
+		targetLanguages.forEach(language => {
+			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+				language = language.substr(0, 2);
 			}
-			if (message.msg) {
-				Meteor.defer(() => {
-					const translations = {};
-					let targetMessage = Object.assign({}, message);
-
-					targetMessage.html = s.escapeHTML(String(targetMessage.msg));
-					targetMessage = this.tokenize(targetMessage);
-
-					let msgs = targetMessage.msg.split('\n');
-					msgs = msgs.map(msg => encodeURIComponent(msg));
-					const query = `q=${ msgs.join('&q=') }`;
-
-					const supportedLanguages = this.getSupportedLanguages('en');
-					targetLanguages.forEach(language => {
-						if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
-							language = language.substr(0, 2);
-						}
-						let result;
-						try {
-							result = HTTP.get(this.apiEndPointUrl, {
-								params: {
-									key: this.apiKey,
-									target: language
-								}, query
-							});
-						} catch (e) {
-							console.log('Error translating message', e);
-							return message;
-						}
-						if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
-							const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
-							translations[language] = this.deTokenize(Object.assign({}, targetMessage, {msg: txt}));
-						}
-					});
-					if (!_.isEmpty(translations)) {
-						RocketChat.models.Messages.addTranslations(message._id, translations);
-					}
+			let result;
+			try {
+				result = HTTP.get(this.apiEndPointUrl, {
+					params: {
+						key: this.apiKey,
+						target: language
+					}, query
 				});
+			} catch (e) {
+				console.log('Error translating message', e);
 			}
-
-			if (message.attachments && message.attachments.length > 0) {
-				Meteor.defer(() => {
-					for (const index in message.attachments) {
-						if (message.attachments.hasOwnProperty(index)) {
-							const attachment = message.attachments[index];
-							const translations = {};
-							if (attachment.description || attachment.text) {
-								const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
-								const supportedLanguages = this.getSupportedLanguages('en');
-								targetLanguages.forEach(language => {
-									if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
-										language = language.substr(0, 2);
-									}
-									const result = HTTP.get(this.apiEndPointUrl, {
-										params: {
-											key: this.apiKey,
-											target: language
-										}, query
-									});
-									if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
-										const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
-										translations[language] = txt;
-									}
-								});
-								if (!_.isEmpty(translations)) {
-									RocketChat.models.Messages.addAttachmentTranslations(message._id, index, translations);
-								}
-							}
-						}
-					}
-				});
+			if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
+				const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
+				translations[language] = this.deTokenize(Object.assign({}, targetMessage, {msg: txt}));
 			}
-		}
-		return message;
+		});
+		return translations;
 	}
 
+	issueTranslateRequestMessageAttachments(attachment, targetLanguages) {
+		const translations = {};
+		const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
+		const supportedLanguages = this.getSupportedLanguages('en');
+		targetLanguages.forEach(language => {
+			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+				language = language.substr(0, 2);
+			}
+			const result = HTTP.get(this.apiEndPointUrl, {
+				params: {
+					key: this.apiKey,
+					target: language
+				}, query
+			});
+			if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
+				const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
+				translations[language] = txt;
+			}
+		});
+		return translations;
+	}
 }
 
 Meteor.startup(() => {
