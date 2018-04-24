@@ -69,7 +69,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 			return this.supportedLanguages[target] = [
 				{
 					'language': 'EN',
-					'name': `${ TAPi18n.__('English') }`
+					'name': TAPi18n.__('English')
 				},
 				{
 					'language': 'DE',
@@ -112,8 +112,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 		let msgs = targetMessage.msg.split('\n');
 		msgs = msgs.map(msg => encodeURIComponent(msg));
 		const query = `text=${ msgs.join('&text=') }`;
-		const userLanguage = window.defaultUserLanguage() || navigator.language;
-		const supportedLanguages = this._getSupportedLanguages(userLanguage);
+		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -150,8 +149,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = `text=${ encodeURIComponent(attachment.description || attachment.text) }`;
-		const userLanguage = window.defaultUserLanguage() || navigator.language;
-		const supportedLanguages = this._getSupportedLanguages(userLanguage);
+		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);

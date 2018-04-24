@@ -39,7 +39,7 @@ RocketChat.AutoTranslate = {
 	},
 
 	init() {
-		Meteor.call('autoTranslate.getSupportedLanguages', navigator.language, (err, languages) => {
+		Meteor.call('autoTranslate.getSupportedLanguages', 'en', (err, languages) => {
 			this.supportedLanguages = languages || [];
 		});
 		Tracker.autorun(() => {
