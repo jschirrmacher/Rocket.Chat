@@ -31,8 +31,8 @@ function setTranslationPreferences(language) {
 	});
 	it('choose Language to be used for translation', () => {
 		flexTab.autoTranslateShowLanguages.click();
-		flexTab.autoTranslateChooseLanguage.click('option=' + language);
-		flexTab.autoTranslateChooseLanguage.getValue().should.equal(language);
+		flexTab.autoTranslateChooseLanguage.click('option=' + language[1]);
+		flexTab.autoTranslateChooseLanguage.getValue().should.equal(language[0]);
 		browser.pause(3000);
 	});
 	it('save & close preferences', () => {
@@ -43,7 +43,7 @@ function setTranslationPreferences(language) {
 
 describe('[Auto Translate]', function() {
 	describe('[Admin User]', function() {
-		var language = 'English';
+		var language = ['EN', 'English' ];
 		before(() => {
 			checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
 		});
@@ -120,7 +120,7 @@ describe('[Auto Translate]', function() {
 		});
 	});
 	describe('[Translation User]', function() {
-		var language = 'Deutsch';
+		var language = ['DE', 'German'];
 		describe('[Create User]', function() {
 			before(() => {
 				// So now we create a new target user
