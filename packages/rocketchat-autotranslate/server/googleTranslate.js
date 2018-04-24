@@ -1,29 +1,38 @@
-import {AutoTranslate, TranslationProviderRegistry} from './autotranslate';
+/* globals RocketChat */
+/**
+ * @author Vigneshwaran Odayappan <vickyokrm@gmail.com>
+ */
+import { AutoTranslate, TranslationProviderRegistry } from './autotranslate';
 import _ from 'underscore';
-import s from 'underscore.string';
 
+/**
+ * Represents google translate class
+ * @class
+ * @augments AutoTranslate
+ */
 class GoogleAutoTranslate extends AutoTranslate {
 	/**
-	 * Constructor
+	 * setup api reference to Google translate to be used as message translation provider.
+	 * @constructor
 	 */
 	constructor() {
 		super();
 		this.name = 'google-translate';
 		this.apiEndPointUrl = 'https://translation.googleapis.com/language/translate/v2';
-		// self register & de-register for callback - afterSaveMessage based on the activeProvider
+		// register & de-register itself - afterSaveMessage based on the activeProvider
 		RocketChat.settings.get('AutoTranslate_ServiceProvider', (key, value) => {
 			if (this.name !== value) {
-				this.deRegisterAfterSaveMsgCallBack(this.name);
+				this._unRegisterAfterSaveMsgCallBack(this.name);
 			} else {
-				this.registerAfterSaveMsgCallBack(this.name);
+				this._registerAfterSaveMsgCallBack(this.name);
 			}
 		});
 	}
 
-
 	/**
-	 * Returns metadata information about the service provide
-	 * @protected implements super abstract method.
+	 * Returns metadata information about the service provider
+	 * @private implements super abstract method.
+	 * @returns {object}
 	 */
 	_getProviderMetadata() {
 		return {
@@ -34,9 +43,9 @@ class GoogleAutoTranslate extends AutoTranslate {
 	}
 
 	/**
-	 * Returns necessary settings information
-	 * about the translation service provider.
-	 * @protected
+	 * Returns necessary settings information about the translation service provider.
+	 * @private implements super abstract method.
+	 * @returns {object}
 	 */
 	_getSettings() {
 		return {
@@ -45,7 +54,14 @@ class GoogleAutoTranslate extends AutoTranslate {
 		};
 	}
 
-	getSupportedLanguages(target) {
+	/**
+	 * Returns supported languages for translation by the active service provider.
+	 * Google Translate api provides the list of supported languages.
+	 * @private implements super abstract method.
+	 * @param {string} target : user language setting or 'en'
+	 * @returns {object} code : value pair
+	 */
+	_getSupportedLanguages(target) {
 		if (this.autoTranslateEnabled && this.apiKey) {
 			if (this.supportedLanguages[target]) {
 				return this.supportedLanguages[target];
@@ -77,12 +93,21 @@ class GoogleAutoTranslate extends AutoTranslate {
 		}
 	}
 
-	issueTranslateRequestMessage(targetMessage, targetLanguages) {
+	/**
+	 * Send Request REST API call to the service provider.
+	 * Returns translated message for each target language in target languages.
+	 * @private
+	 * @param {object} targetMessage
+	 * @param {object} targetLanguages
+	 * @returns {object} translations: Translated messages for each language
+	 */
+	_sendRequestTranslateMessage(targetMessage, targetLanguages) {
 		const translations = {};
 		let msgs = targetMessage.msg.split('\n');
 		msgs = msgs.map(msg => encodeURIComponent(msg));
 		const query = `q=${ msgs.join('&q=') }`;
-		const supportedLanguages = this.getSupportedLanguages('en');
+		const supportedLanguages = 1;
+		this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -106,10 +131,17 @@ class GoogleAutoTranslate extends AutoTranslate {
 		return translations;
 	}
 
-	issueTranslateRequestMessageAttachments(attachment, targetLanguages) {
+	/**
+	 * Returns translated message attachment description in target languages.
+	 * @private
+	 * @param {object} attachment
+	 * @param {object} targetLanguages
+	 * @returns {object} translated messages for each target language
+	 */
+	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
-		const supportedLanguages = this.getSupportedLanguages('en');
+		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -121,8 +153,7 @@ class GoogleAutoTranslate extends AutoTranslate {
 				}, query
 			});
 			if (result.statusCode === 200 && result.data && result.data.data && result.data.data.translations && Array.isArray(result.data.data.translations) && result.data.data.translations.length > 0) {
-				const txt = result.data.data.translations.map(translation => translation.translatedText).join('\n');
-				translations[language] = txt;
+				translations[language] = result.data.data.translations.map(translation => translation.translatedText).join('\n');
 			}
 		});
 		return translations;

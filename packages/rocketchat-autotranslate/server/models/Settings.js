@@ -1,4 +1,4 @@
-/* globals _ */
+/* globals RocketChat */
 
 Object.assign(RocketChat.models.Settings, {
 	renameSetting(oldId, newId) {

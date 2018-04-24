@@ -1,10 +1,20 @@
-import {TranslationProviderRegistry, AutoTranslate} from 'meteor/rocketchat:autotranslate';
-import {RocketChat} from 'meteor/rocketchat:lib';
+/**
+ * @author Vigneshwaran Odayappan <vickyokrm@gmail.com>
+ */
+
+import { TranslationProviderRegistry, AutoTranslate } from 'meteor/rocketchat:autotranslate';
+import { RocketChat } from 'meteor/rocketchat:lib';
 import _ from 'underscore';
 
+/**
+ * Represents DEEPL translate class
+ * @class
+ * @augments AutoTranslate
+ */
 class DeeplAutoTranslate extends AutoTranslate {
 	/**
-	 * Constructor
+	 * setup api reference to deepl translate to be used as message translation provider.
+	 * @constructor
 	 */
 	constructor() {
 		super();
@@ -12,17 +22,18 @@ class DeeplAutoTranslate extends AutoTranslate {
 		this.apiEndPointUrl = 'https://api.deepl.com/v1/translate';
 		// self register & de-register callback - afterSaveMessage based on the activeProvider
 		RocketChat.settings.get('AutoTranslate_ServiceProvider', (key, value) => {
-			if (this.name !== value) {
-				this.deRegisterAfterSaveMsgCallBack(this.name);
+			if (this.name === value) {
+				this._registerAfterSaveMsgCallBack(this.name);
 			} else {
-				this.registerAfterSaveMsgCallBack(this.name);
+				this._unRegisterAfterSaveMsgCallBack(this.name);
 			}
 		});
 	}
 
 	/**
 	 * Returns metadata information about the service provide
-	 * @protected implements super abstract method.
+	 * @private implements super abstract method.
+	 * @return {object}
 	 */
 	_getProviderMetadata() {
 		return {
@@ -33,9 +44,9 @@ class DeeplAutoTranslate extends AutoTranslate {
 	}
 
 	/**
-	 * Returns necessary settings information
-	 * about the translation service provider.
-	 * @protected
+	 * Returns necessary settings information about the translation service provider.
+	 * @private implements super abstract method.
+	 * @return {object}
 	 */
 	_getSettings() {
 		return {
@@ -45,9 +56,12 @@ class DeeplAutoTranslate extends AutoTranslate {
 	}
 
 	/**
-	 * Return supported languages for translation
+	 * Returns supported languages for translation by the active service provider.
+	 * @private implements super abstract method.
+	 * @param {string} target
+	 * @returns {object} code : value pair
 	 */
-	getSupportedLanguages(target) {
+	_getSupportedLanguages(target) {
 		if (this.autoTranslateEnabled && this.apiKey) {
 			if (this.supportedLanguages[target]) {
 				return this.supportedLanguages[target];
@@ -55,42 +69,50 @@ class DeeplAutoTranslate extends AutoTranslate {
 			return this.supportedLanguages[target] = [
 				{
 					'language': 'EN',
-					'name': 'English'
+					'name': TAPi18n.__('English')
 				},
 				{
 					'language': 'DE',
-					'name': 'German'
+					'name': TAPi18n.__('German')
 				},
 				{
 					'language': 'FR',
-					'name': 'French'
+					'name': TAPi18n.__('French')
 				},
 				{
 					'language': 'ES',
-					'name': 'Spanish'
+					'name': TAPi18n.__('Spanish')
 				},
 				{
 					'language': 'IT',
-					'name': 'Italian'
+					'name': TAPi18n.__('Italian')
 				},
 				{
 					'language': 'NL',
-					'name': 'Dutch'
+					'name': TAPi18n.__('Dutch')
 				},
 				{
 					'language': 'PL',
-					'name': 'Polish'
+					'name': TAPi18n.__('Polish')
 				}
 			];
 		}
 	}
 
-	issueTranslateRequestMessage(targetMessage, targetLanguages) {
+	/**
+	 * Send Request REST API call to the service provider.
+	 * Returns translated message for each target language in target languages.
+	 * @private
+	 * @param {object} targetMessage
+	 * @param {object} targetLanguages
+	 * @returns {object} translations: Translated messages for each language
+	 */
+	_sendRequestTranslateMessage(targetMessage, targetLanguages) {
 		const translations = {};
 		let msgs = targetMessage.msg.split('\n');
 		msgs = msgs.map(msg => encodeURIComponent(msg));
 		const query = `text=${ msgs.join('&text=') }`;
-		const supportedLanguages = this.getSupportedLanguages('en');
+		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -117,10 +139,17 @@ class DeeplAutoTranslate extends AutoTranslate {
 		return translations;
 	}
 
-	issueTranslateRequestMessageAttachments(attachment, targetLanguages) {
+	/**
+	 * Returns translated message attachment description in target languages.
+	 * @private
+	 * @param {object} attachment
+	 * @param {object} targetLanguages
+	 * @returns {object} translated messages for each target language
+	 */
+	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = `text=${ encodeURIComponent(attachment.description || attachment.text) }`;
-		const supportedLanguages = this.getSupportedLanguages('en');
+		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -138,8 +167,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 			}
 			if (result.statusCode === 200 && result.data && result.data.translations && Array.isArray(result.data.translations) && result.data.translations.length > 0) {
 				if (result.data.translations.map(translation => translation.detected_source_language).join() !== language) {
-					const txt = result.data.translations.map(translation => translation.text).join('\n');
-					translations[language] = txt;
+					translations[language]= result.data.translations.map(translation => translation.text).join('\n');
 				}
 			}
 		});

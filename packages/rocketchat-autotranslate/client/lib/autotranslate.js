@@ -1,3 +1,4 @@
+/* globals RocketChat */
 import _ from 'underscore';
 
 RocketChat.AutoTranslate = {
@@ -38,7 +39,8 @@ RocketChat.AutoTranslate = {
 	},
 
 	init() {
-		Meteor.call('autoTranslate.getSupportedLanguages', 'en', (err, languages) => {
+		const userLanguage = Meteor.user().language || window.defaultUserLanguage() || 'en' ;
+		Meteor.call('autoTranslate.getSupportedLanguages', userLanguage, (err, languages) => {
 			this.supportedLanguages = languages || [];
 		});
 		Tracker.autorun(() => {
@@ -109,7 +111,5 @@ RocketChat.AutoTranslate = {
 };
 
 Meteor.startup(function() {
-	Meteor.defer(function() {
-		RocketChat.AutoTranslate.init();
-	});
+	RocketChat.AutoTranslate.init();
 });
