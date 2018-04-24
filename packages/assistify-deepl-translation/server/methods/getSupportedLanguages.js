@@ -1,6 +1,5 @@
 Meteor.methods({
 	getSupportedLanguages(target) {
-		const lng = Meteor.user().language || RocketChat.settings.get('language') || 'en';
 		return [
 			{
 				'language': 'EN',
