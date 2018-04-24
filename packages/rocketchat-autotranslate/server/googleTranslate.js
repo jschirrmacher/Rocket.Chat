@@ -2,7 +2,7 @@
 /**
  * @author Vigneshwaran Odayappan <vickyokrm@gmail.com>
  */
-import { AutoTranslate, TranslationProviderRegistry } from './autotranslate';
+import {AutoTranslate, TranslationProviderRegistry} from './autotranslate';
 import _ from 'underscore';
 
 /**
@@ -106,8 +106,8 @@ class GoogleAutoTranslate extends AutoTranslate {
 		let msgs = targetMessage.msg.split('\n');
 		msgs = msgs.map(msg => encodeURIComponent(msg));
 		const query = `q=${ msgs.join('&q=') }`;
-		const supportedLanguages = 1;
-		this._getSupportedLanguages('en');
+		const userLanguage = window.defaultUserLanguage() || navigator.language;
+		const supportedLanguages = this._getSupportedLanguages(userLanguage);
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -141,7 +141,8 @@ class GoogleAutoTranslate extends AutoTranslate {
 	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = `q=${ encodeURIComponent(attachment.description || attachment.text) }`;
-		const supportedLanguages = this._getSupportedLanguages('en');
+		const userLanguage = window.defaultUserLanguage() || navigator.language;
+		const supportedLanguages = this._getSupportedLanguages(userLanguage);
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);

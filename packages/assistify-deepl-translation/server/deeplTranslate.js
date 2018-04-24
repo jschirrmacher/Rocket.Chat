@@ -2,8 +2,8 @@
  * @author Vigneshwaran Odayappan <vickyokrm@gmail.com>
  */
 
-import { TranslationProviderRegistry, AutoTranslate } from 'meteor/rocketchat:autotranslate';
-import { RocketChat } from 'meteor/rocketchat:lib';
+import {TranslationProviderRegistry, AutoTranslate} from 'meteor/rocketchat:autotranslate';
+import {RocketChat} from 'meteor/rocketchat:lib';
 import _ from 'underscore';
 
 /**
@@ -69,7 +69,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 			return this.supportedLanguages[target] = [
 				{
 					'language': 'EN',
-					'name': TAPi18n.__('English')
+					'name': `${ TAPi18n.__('English') }`
 				},
 				{
 					'language': 'DE',
@@ -112,7 +112,8 @@ class DeeplAutoTranslate extends AutoTranslate {
 		let msgs = targetMessage.msg.split('\n');
 		msgs = msgs.map(msg => encodeURIComponent(msg));
 		const query = `text=${ msgs.join('&text=') }`;
-		const supportedLanguages = this._getSupportedLanguages('en');
+		const userLanguage = window.defaultUserLanguage() || navigator.language;
+		const supportedLanguages = this._getSupportedLanguages(userLanguage);
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -149,7 +150,8 @@ class DeeplAutoTranslate extends AutoTranslate {
 	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = `text=${ encodeURIComponent(attachment.description || attachment.text) }`;
-		const supportedLanguages = this._getSupportedLanguages('en');
+		const userLanguage = window.defaultUserLanguage() || navigator.language;
+		const supportedLanguages = this._getSupportedLanguages(userLanguage);
 		targetLanguages.forEach(language => {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
 				language = language.substr(0, 2);
@@ -167,7 +169,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 			}
 			if (result.statusCode === 200 && result.data && result.data.translations && Array.isArray(result.data.translations) && result.data.translations.length > 0) {
 				if (result.data.translations.map(translation => translation.detected_source_language).join() !== language) {
-					translations[language]= result.data.translations.map(translation => translation.text).join('\n');
+					translations[language] = result.data.translations.map(translation => translation.text).join('\n');
 				}
 			}
 		});
