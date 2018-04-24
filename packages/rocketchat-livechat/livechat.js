@@ -51,7 +51,7 @@ WebApp.connectHandlers.use('/livechat', Meteor.bindEnvironment((req, res, next) 
 			${ head }
 		</head>
 		<body>
-			<script type="text/javascript"  src="${ baseUrl }/livechat/livechat.js?_dc=${ Autoupdate.autoupdateVersion }"></script>
+			<script type="text/javascript"  src="${ baseUrl }livechat/livechat.js?_dc=${ Autoupdate.autoupdateVersion }"></script>
 			<script>
 				/**
 				 * The following lines enable a more mobile-friendly styling.
