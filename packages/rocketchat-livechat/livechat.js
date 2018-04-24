@@ -63,11 +63,11 @@ WebApp.connectHandlers.use('/livechat', Meteor.bindEnvironment((req, res, next) 
 				 * @TODO Knowing this is not the best solution, we should check alternatives here.
 				 * E.g. check https://stackoverflow.com/questions/27227214/
 				 */
-				 document.addEventListener('DOMContentLoaded', function() {
-					 if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-						 document.body.className += ' ' + 'mobile-view';
-					 }
-				 });
+				document.addEventListener('DOMContentLoaded', function() {
+					if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+						document.body.className += ' ' + 'mobile-view';
+					}
+				});
 			</script>
 		</body>
 	</html>`;
