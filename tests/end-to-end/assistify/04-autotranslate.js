@@ -43,7 +43,7 @@ function setTranslationPreferences(language) {
 
 describe('[Auto Translate]', function() {
 	describe('[Admin User]', function() {
-		var language = 'EN';
+		var language = 'English';
 		before(() => {
 			checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
 		});
@@ -120,7 +120,7 @@ describe('[Auto Translate]', function() {
 		});
 	});
 	describe('[Translation User]', function() {
-		var language = 'DE';
+		var language = 'Deutsch';
 		describe('[Create User]', function() {
 			before(() => {
 				// So now we create a new target user
