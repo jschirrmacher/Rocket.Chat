@@ -16,6 +16,7 @@ Package.onUse(function(api) {
 	api.use('rocketchat:lib');
 	api.use('rocketchat:autotranslate');
 	api.addFiles('server/deeplTranslate.js', 'server');
+	api.addFiles('server/methods/getSupportedLanguages.js', 'server');
 
 });
 

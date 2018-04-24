@@ -66,36 +66,7 @@ class DeeplAutoTranslate extends AutoTranslate {
 			if (this.supportedLanguages[target]) {
 				return this.supportedLanguages[target];
 			}
-			return this.supportedLanguages[target] = [
-				{
-					'language': 'EN',
-					'name': TAPi18n.__('English')
-				},
-				{
-					'language': 'DE',
-					'name': TAPi18n.__('German')
-				},
-				{
-					'language': 'FR',
-					'name': TAPi18n.__('French')
-				},
-				{
-					'language': 'ES',
-					'name': TAPi18n.__('Spanish')
-				},
-				{
-					'language': 'IT',
-					'name': TAPi18n.__('Italian')
-				},
-				{
-					'language': 'NL',
-					'name': TAPi18n.__('Dutch')
-				},
-				{
-					'language': 'PL',
-					'name': TAPi18n.__('Polish')
-				}
-			];
+			return this.supportedLanguages[target] = Meteor.call('getSupportedLanguages', target);
 		}
 	}
 
