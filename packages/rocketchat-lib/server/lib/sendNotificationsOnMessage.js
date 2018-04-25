@@ -128,13 +128,13 @@ function messageContainsHighlight(message, highlights) {
 function getLivechatAgentIdsForRoom(room) {
 	const inquiry = RocketChat.models.LivechatInquiry.findOneByRoomId(room._id);
 	const department = inquiry ? inquiry.department : null;
-	let agents = [];
+	let agentIds = [];
 	if (department) {
-		agents = RocketChat.models.LivechatDepartmentAgents.getOnlineForDepartment(department).fetch();
+		agentIds = RocketChat.models.LivechatDepartmentAgents.getOnlineForDepartment(department).fetch().map((agent)=>agent.agentId);
 	} else {
-		agents = RocketChat.models.Users.findOnlineAgents().fetch();
+		agentIds = RocketChat.models.Users.findOnlineAgents().fetch().map((user)=>user._id);
 	}
-	return agents.map((agent)=>agent.agentId);
+	return agentIds;
 }
 
 function getBadgeCount(userId) {
