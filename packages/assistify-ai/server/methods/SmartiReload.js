@@ -1,18 +1,19 @@
 /* globals SystemLogger, RocketChat */
 
 import {SmartiProxy, verbs} from '../SmartiProxy';
+import {SmartiAdapter} from '../lib/SmartiAdapter';
 
 Meteor.methods({
 	triggerFullResync() {
 		SystemLogger.info('Full Smarti resync triggered');
 
-		const query = {$or: [{outOfSync: true}, {outOfSync: {$exists: false}}]};
+		const query = {$or: [{outOfSync: true}, {outOfSync: false}, {outOfSync: {$exists: false}}]};
 
 		query.t = 'r';
 		const requests = RocketChat.models.Rooms.model.find(query).fetch();
 		SystemLogger.info('Number of Requests to sync: ', requests.length);
 		for (let i=0; i < requests.length; i++) {
-			Meteor.defer(()=>Meteor.call('tryResync', requests[i]._id));
+			Meteor.defer(()=>Meteor.call('tryResync', requests[i]._id, true));
 		}
 
 		query.t = 'e';
@@ -62,16 +63,18 @@ Meteor.methods({
 });
 
 Meteor.methods({
-	tryResync(rid) {
+	tryResync(rid, force) {
 		SystemLogger.debug('Sync all unsynced messages in room: ', rid);
 		const room = RocketChat.models.Rooms.findOneById(rid);
 		const messageDB = RocketChat.models.Messages;
 		const unsync = messageDB.find({ lastSync: { $exists: false }, rid, t: { $exists: false } }).fetch();
-		if (unsync.length === 0 && !room.outOfSync) {
-			SystemLogger.debug('Room is already in sync');
-			return true;
-		} else {
-			SystemLogger.debug('Messages out of sync: ', unsync.length);
+		if (!force || force !== true) {
+			if (unsync.length === 0 && !room.outOfSync) {
+				SystemLogger.debug('Room is already in sync');
+				return true;
+			} else {
+				SystemLogger.debug('Messages out of sync: ', unsync.length);
+			}
 		}
 		let conversation;
 
@@ -137,7 +140,9 @@ Meteor.methods({
 			conversation.messages.push(newMessage);
 		}
 
-		SmartiProxy.propagateToSmarti(verbs.post, 'conversation', conversation);
+		const response = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', conversation);
+		SystemLogger.debug('Update conversation with id: ', response.id);
+		SmartiAdapter.updateMapping(rid, response.id);
 		SystemLogger.debug('New conversation updated with Smarti');
 		for (let i=0; i < messages.length; i++) {
 			Meteor.defer(()=>Meteor.call('markMessageAsSynced', messages[i]._id));

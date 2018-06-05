@@ -1,6 +1,7 @@
 /* globals SystemLogger, RocketChat */
 
 import {SmartiProxy, verbs} from '../SmartiProxy';
+import {SmartiAdapter} from '../lib/SmartiAdapter';
 
 const querystring = require('querystring');
 
@@ -20,57 +21,7 @@ Meteor.methods({
 	 * @returns {String} - the conversation Id
 	 */
 	getConversationId(channelId) {
-		SystemLogger.debug(`Retrieving conversation ID for channel: ${ channelId }`);
-		const m = RocketChat.models.LivechatExternalMessage.findOneById(channelId);
-		if (m && m.conversationId) {
-			return m.conversationId;
-		} else {
-			SystemLogger.debug('Smarti - Trying legacy service to retrieve conversation ID...');
-			const conversation = RocketChat.RateLimiter.limitFunction(
-				SmartiProxy.propagateToSmarti, 5, 1000, {
-					userId(userId) {
-						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-					}
-				}
-			)(verbs.get, `legacy/rocket.chat?channel_id=${ channelId }`, null, (error) => {
-				if (error) {
-					// 404 is expected if no mapping exists
-					if (error.response && error.response.statusCode === 404) {
-						return null;
-					}
-					return {errorCode: error.code};
-				}
-			});
-
-			if (conversation && conversation.id) {
-				let timestamp = conversation.messages &&
-					conversation.messages[conversation.messages.length - 1] &&
-					conversation.messages[conversation.messages.length - 1].time;
-
-				if (!timestamp) {
-					timestamp = conversation.lastModified;
-				}
-
-				// Store conversation ID and latest conversation timestamp
-				RocketChat.models.LivechatExternalMessage.update(
-					{
-						_id: channelId
-					}, {
-						rid: channelId,
-						knowledgeProvider: 'smarti',
-						conversationId: conversation.id,
-						ts: timestamp
-					}, {
-						upsert: true
-					}
-				);
-
-				return conversation.id;
-			} else {
-				SystemLogger.debug(`Smarti - no conversation found for channel: ${ channelId }`);
-				return null;
-			}
-		}
+		return SmartiAdapter.getConversationId(channelId);
 	},
 
 	/**
@@ -170,10 +121,12 @@ function delayedReload() {
 	timeoutHandle = Meteor.setTimeout(loadSmarti, 86400000);
 }
 
-/**
- * This method can be used to explicitly trigger a reconfiguration of the Smarti-widget
- */
+
 Meteor.methods({
+
+	/**
+	 * This method can be used to explicitly trigger a reconfiguration of the Smarti-widget
+	 */
 	reloadSmarti() {
 		script = undefined;
 		script = loadSmarti();
@@ -181,13 +134,11 @@ Meteor.methods({
 		return {
 			message: 'settings-reloaded-successfully'
 		};
-	}
-});
+	},
 
-/**
- * This method is triggered by the client in order to retrieve the most recent widget
- */
-Meteor.methods({
+	/**
+	 * This method is triggered by the client in order to retrieve the most recent widget
+	 */
 	getSmartiUiScript() {
 		if (!script) { //buffering
 			script = loadSmarti();
@@ -196,5 +147,3 @@ Meteor.methods({
 		return script;
 	}
 });
-
-
