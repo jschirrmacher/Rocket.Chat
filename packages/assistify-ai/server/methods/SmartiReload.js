@@ -4,32 +4,39 @@ import {SmartiProxy, verbs} from '../SmartiProxy';
 import {SmartiAdapter} from '../lib/SmartiAdapter';
 
 Meteor.methods({
-	triggerFullResync() {
+
+	triggerResync(force) {
 		SystemLogger.info('Full Smarti resync triggered');
 
-		const query = {$or: [{outOfSync: true}, {outOfSync: false}, {outOfSync: {$exists: false}}]};
+		let query = {};
+		if (!force || force !== true) {
+			query = {$or: [{outOfSync: true}, {outOfSync: {$exists: false}}]};
+		}
 
 		query.t = 'r';
 		const requests = RocketChat.models.Rooms.model.find(query).fetch();
 		SystemLogger.info('Number of Requests to sync: ', requests.length);
 		for (let i=0; i < requests.length; i++) {
-			Meteor.defer(()=>Meteor.call('tryResync', requests[i]._id, true));
+			Meteor.defer(()=>Meteor.call('tryResync', requests[i]._id, force));
 		}
 
 		query.t = 'e';
 		const topics = RocketChat.models.Rooms.model.find(query).fetch();
 		SystemLogger.info('Number of Topics to sync: ', topics.length);
 		for (let i=0; i < topics.length; i++) {
-			Meteor.defer(()=>Meteor.call('tryResync', topics[i]._id));
+			Meteor.defer(()=>Meteor.call('tryResync', topics[i]._id), force);
 		}
 
 		return {
 			message: 'sync-triggered-successfully'
 		};
-	}
-});
+	},
 
-Meteor.methods({
+	triggerFullResync() {
+
+		Meteor.defer(()=>Meteor.call('triggerResync', true));
+	},
+
 	markMessageAsSynced(messageId) {
 		const messageDB = RocketChat.models.Messages;
 		const message = messageDB.findOneById(messageId);
@@ -46,10 +53,8 @@ Meteor.methods({
 		} else {
 			SystemLogger.debug('Message Id: ', messageId, ' can not be synced');
 		}
-	}
-});
+	},
 
-Meteor.methods({
 	markRoomAsUnsynced(rid) {
 		RocketChat.models.Rooms.model.update(
 			{_id: rid},
@@ -59,10 +64,8 @@ Meteor.methods({
 				}
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is out of sync');
-	}
-});
+	},
 
-Meteor.methods({
 	tryResync(rid, force) {
 		SystemLogger.debug('Sync all unsynced messages in room: ', rid);
 		const room = RocketChat.models.Rooms.findOneById(rid);
@@ -80,16 +83,22 @@ Meteor.methods({
 
 		// conversation exists for channel?
 		SystemLogger.debug('Smarti - Trying legacy service to retrieve conversation ID...');
-		conversation = SmartiProxy.propagateToSmarti(verbs.get,
-			`legacy/rocket.chat?channel_id=${ rid }`, null, (error) => {
-				// 404 is expected if no mapping exists
-				if (typeof error.response === 'undefined') {
-					return null;
+
+		conversation = RocketChat.RateLimiter.limitFunction(
+			SmartiProxy.propagateToSmarti, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 				}
-				if (error.response.statusCode === 404) {
-					return false;
-				}
-			});
+			}
+		)(verbs.get, `legacy/rocket.chat?channel_id=${ rid }`, null, (error) => {
+			// 404 is expected if no mapping exists
+			if (typeof error.response === 'undefined') {
+				return null;
+			}
+			if (error.response.statusCode === 404) {
+				return false;
+			}
+		});
 
 		// console.log('Conversation from legacy', conversation);
 
@@ -113,8 +122,13 @@ Meteor.methods({
 				}
 			};
 		} else {
-			SmartiProxy.propagateToSmarti(verbs.delete,
-				`conversation/${ conversation.id }`, null);
+			RocketChat.RateLimiter.limitFunction(
+				SmartiProxy.propagateToSmarti, 5, 1000, {
+					userId(userId) {
+						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+					}
+				}
+			)(verbs.delete, `conversation/${ conversation.id }`, null);
 			SystemLogger.debug('Deleted old conversation - ready to sync');
 		}
 
@@ -140,9 +154,16 @@ Meteor.methods({
 			conversation.messages.push(newMessage);
 		}
 
-		const response = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', conversation);
-		SystemLogger.debug('Update conversation with id: ', response.id);
-		SmartiAdapter.updateMapping(rid, response.id);
+		const analyzedConversation =  RocketChat.RateLimiter.limitFunction(
+			SmartiProxy.propagateToSmarti, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		)(verbs.post, 'conversation', conversation);
+
+		SystemLogger.debug('Update conversation with id: ', analyzedConversation.id);
+		SmartiAdapter.analysisCompleted(rid, analyzedConversation.id);
 		SystemLogger.debug('New conversation updated with Smarti');
 		for (let i=0; i < messages.length; i++) {
 			Meteor.defer(()=>Meteor.call('markMessageAsSynced', messages[i]._id));

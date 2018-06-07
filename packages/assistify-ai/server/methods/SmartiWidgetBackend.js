@@ -21,7 +21,13 @@ Meteor.methods({
 	 * @returns {String} - the conversation Id
 	 */
 	getConversationId(channelId) {
-		return SmartiAdapter.getConversationId(channelId);
+		return RocketChat.RateLimiter.limitFunction(
+			SmartiAdapter.getConversationId, 5, 1000, {
+				userId(userId) {
+					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+				}
+			}
+		)(channelId);
 	},
 
 	/**

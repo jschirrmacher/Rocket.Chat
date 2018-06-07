@@ -27,8 +27,8 @@ RocketChat.API.v1.addRoute('smarti.result/:_token', {authRequired: false}, {
 		if (this.urlParams._token && this.urlParams._token === rcWebhookToken) {
 
 			SystemLogger.debug('Smarti - got conversation result:', JSON.stringify(this.bodyParams, null, 2));
-			SmartiAdapter.updateMapping(this.bodyParams.channelId, this.bodyParams.conversationId, new Date(), this.bodyParams.token);
-			RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', RocketChat.models.LivechatExternalMessage.findOneById(roomId));
+			SmartiAdapter.analysisCompleted(this.bodyParams.channelId, this.bodyParams.conversationId, new Date(), this.bodyParams.token);
+
 			return RocketChat.API.v1.success();
 		} else {
 			return RocketChat.API.v1.unauthorized({msg: 'token not valid'});

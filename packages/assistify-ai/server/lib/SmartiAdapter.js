@@ -19,7 +19,7 @@ export class SmartiAdapter {
 		return RocketChat.settings.get('Assistify_AI_Smarti_Domain');
 	}
 
-	static updateMapping(roomId, conversationId, timestamp) {
+	static _updateMapping(roomId, conversationId, timestamp, token) {
 		// update/insert channel/conversation specific timestamp
 		RocketChat.models.LivechatExternalMessage.update(
 			{
@@ -28,6 +28,7 @@ export class SmartiAdapter {
 				rid: roomId,
 				knowledgeProvider: 'smarti',
 				conversationId,
+				token,
 				ts: timestamp
 			}, {
 				upsert: true
@@ -35,48 +36,61 @@ export class SmartiAdapter {
 		);
 	}
 
+	static _getLastConversationAnalyzedTime(conversation) {
+
+		let timestamp = new Date().getTime();
+		if (conversation && conversation.id) {
+			timestamp = conversation.messages &&
+				conversation.messages[conversation.messages.length - 1] &&
+				conversation.messages[conversation.messages.length - 1].time;
+			if (!timestamp) {
+				timestamp = conversation.lastModified;
+			}
+		}
+		return timestamp;
+	}
+
+	static analysisCompleted(roomId, conversationId, timestamp, token) {
+		// update/insert channel/conversation specific timestamp
+		SmartiAdapter._updateMapping(roomId, conversationId, timestamp, token);
+		RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', RocketChat.models.LivechatExternalMessage.findOneById(roomId));
+	}
+
 	/**
+	 * Tries to get the conversationId from the analyzed conversations cache (LivechatExternalMessage)
+	 * and updates the cache if not present but available in Smarti.
+	 *
 	 * Returns a Smarti conversation Id for the given roomId.
 	 *
 	 * @param {*} roomId - the room for which the Smarti conversationId shall be retrieved
 	 */
 	static getConversationId(roomId) {
-
-		SystemLogger.debug(`Retrieving conversation ID for channel: ${ roomId }`);
-		const m = RocketChat.models.LivechatExternalMessage.findOneById(roomId);
-		if (m && m.conversationId) {
-			return m.conversationId;
+		let conversationId = null;
+		SystemLogger.info(`Retrieving conversation ID for channel: ${ roomId }`);
+		const cachedSmartiResult = RocketChat.models.LivechatExternalMessage.findOneById(roomId);
+		if (cachedSmartiResult && cachedSmartiResult.conversationId) {
+			conversationId = cachedSmartiResult.conversationId;
 		} else {
-			SystemLogger.debug('Smarti - Trying legacy service to retrieve conversation ID...');
-			const conversation = RocketChat.RateLimiter.limitFunction(
-				SmartiProxy.propagateToSmarti, 5, 1000, {
-					userId(userId) {
-						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-					}
-				}
-			)(verbs.get, `legacy/rocket.chat?channel_id=${ roomId }`, null, (error) => {
+			SystemLogger.debug('No cached Smarti conversation found for roomId', roomId);
+			SystemLogger.debug('Trying Smarti legacy service to retrieve conversation...');
+			const conversation = SmartiProxy.propagateToSmarti(verbs.get, `legacy/rocket.chat?channel_id=${ roomId }`, null, (error) => {
 				// 404 is expected if no mapping exists
 				if (error.response.statusCode === 404) {
-					return null;
+					SystemLogger.warn(`No Smarti conversationId found (Server Error 404) for room: ${ roomId }`);
+				} else {
+					// some other error occurred
+					SystemLogger.error(`Unexpected error while retrieving Smarti conversationId for room: ${ roomId }`, error.response);
 				}
 			});
-
 			if (conversation && conversation.id) {
-				let timestamp = conversation.messages &&
-					conversation.messages[conversation.messages.length - 1] &&
-					conversation.messages[conversation.messages.length - 1].time;
-
-				if (!timestamp) {
-					timestamp = conversation.lastModified;
-				}
-				// Update mapping
-				SmartiAdapter.updateMapping(roomId, conversation.id, timestamp);
-				return conversation.id;
+				const timestamp = SmartiAdapter._getLastConversationAnalyzedTime(conversation);
+				SmartiAdapter._updateMapping(roomId, conversation.id, timestamp);
+				conversationId = conversation.id;
 			} else {
-				SystemLogger.debug(`Smarti - no conversation found for channel: ${ roomId }`);
-				return null;
+				SystemLogger.debug(`Smarti - no conversation found for room: ${ roomId }`);
 			}
 		}
+		return conversationId;
 	}
 
 	/**
