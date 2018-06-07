@@ -163,7 +163,7 @@ Meteor.methods({
 		)(verbs.post, 'conversation', conversation);
 
 		SystemLogger.debug('Update conversation with id: ', analyzedConversation.id);
-		SmartiAdapter.analysisCompleted(rid, analyzedConversation.id);
+		SmartiAdapter.analysisCompleted(rid, analyzedConversation.id, Date.now());
 		SystemLogger.debug('New conversation updated with Smarti');
 		for (let i=0; i < messages.length; i++) {
 			Meteor.defer(()=>Meteor.call('markMessageAsSynced', messages[i]._id));

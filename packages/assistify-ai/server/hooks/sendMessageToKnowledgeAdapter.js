@@ -23,12 +23,7 @@ function isMessageRelevant(message, room) {
 		return false;
 	}
 
-	const knowledgeAdapter = getKnowledgeAdapter();
-	if (!knowledgeAdapter) {
-		return false;
-	}
-
-	return true;
+	return getKnowledgeAdapter();
 }
 
 RocketChat.callbacks.add('afterSaveMessage', function(message, room) {
