@@ -150,6 +150,13 @@ export class SmartiAdapter {
 			SmartiProxy.propagateToSmarti(verbs.delete, `conversation/${ conversationId }/message/${ message._id }`);
 			SmartiAdapter._updateMapping(message.rid, conversationId, Date.now());
 		}
+
+		// request analysis results
+		const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ conversationId }/analysis`);
+		SystemLogger.debug('analysisResult:', JSON.stringify(analysisResult, null, '\t'));
+		if (analysisResult) {
+			RocketChat.Notifications.notifyRoom(message.rid, 'newConversationResult', analysisResult);
+		}
 	}
 
 	/**
