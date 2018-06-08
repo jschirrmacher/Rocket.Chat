@@ -34,6 +34,7 @@ Meteor.methods({
 
 	triggerFullResync() {
 
+		RocketChat.models.LivechatExternalMessage.clear();
 		Meteor.defer(()=>Meteor.call('triggerResync', true));
 	},
 
@@ -146,12 +147,13 @@ Meteor.methods({
 		const newSmartiConversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', conversation);
 		// get the analysis result
 		const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
-		SystemLogger.debug('analysisResult:', JSON.stringify(analysisResult, null, '\t'));
+		SystemLogger.debug(`Smarti - New conversation with Id ${ newSmartiConversation.id } analyzed.`);
 		if (analysisResult) {
-			SmartiAdapter.analysisCompleted(analysisResult);
+			SystemLogger.debug('analysisResult:', JSON.stringify(analysisResult, null, '\t'));
+			SmartiAdapter.analysisCompleted(rid, newSmartiConversation.id, analysisResult);
 		}
+		SystemLogger.debug(`Smarti analysisCompleted finished for conversation ${ newSmartiConversation.id }`);
 
-		SystemLogger.debug(`Smarti - New conversation with Id ${ newSmartiConversation.id } analyzed: ${ analysisResult }`);
 		for (let i=0; i < messages.length; i++) {
 			Meteor.defer(()=>Meteor.call('markMessageAsSynced', messages[i]._id));
 		}
