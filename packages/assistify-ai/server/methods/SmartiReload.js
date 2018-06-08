@@ -84,13 +84,7 @@ Meteor.methods({
 		// conversation exists for channel?
 		SystemLogger.debug('Smarti - Trying legacy service to retrieve conversation ID...');
 
-		conversation = RocketChat.RateLimiter.limitFunction(
-			SmartiProxy.propagateToSmarti, 5, 1000, {
-				userId(userId) {
-					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-				}
-			}
-		)(verbs.get, `legacy/rocket.chat?channel_id=${ rid }`, null, (error) => {
+		conversation = SmartiProxy.propagateToSmarti(verbs.get, `legacy/rocket.chat?channel_id=${ rid }`, null, (error) => {
 			// 404 is expected if no mapping exists
 			if (typeof error.response === 'undefined') {
 				return null;
@@ -122,13 +116,7 @@ Meteor.methods({
 				}
 			};
 		} else {
-			RocketChat.RateLimiter.limitFunction(
-				SmartiProxy.propagateToSmarti, 5, 1000, {
-					userId(userId) {
-						return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-					}
-				}
-			)(verbs.delete, `conversation/${ conversation.id }`, null);
+			SmartiProxy.propagateToSmarti(verbs.delete, `conversation/${ conversation.id }`, null);
 			SystemLogger.debug('Deleted old conversation - ready to sync');
 		}
 
@@ -154,17 +142,16 @@ Meteor.methods({
 			conversation.messages.push(newMessage);
 		}
 
-		const analyzedConversation =  RocketChat.RateLimiter.limitFunction(
-			SmartiProxy.propagateToSmarti, 5, 1000, {
-				userId(userId) {
-					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
-				}
-			}
-		)(verbs.post, 'conversation', conversation);
+		// post the new conversation to Smarti
+		const newSmartiConversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', conversation);
+		// get the analysis result
+		const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
+		SystemLogger.debug('analysisResult:', JSON.stringify(analysisResult, null, '\t'));
+		if (analysisResult) {
+			SmartiAdapter.analysisCompleted(analysisResult);
+		}
 
-		SystemLogger.debug('Update conversation with id: ', analyzedConversation.id);
-		SmartiAdapter.analysisCompleted(rid, analyzedConversation.id, Date.now());
-		SystemLogger.debug('New conversation updated with Smarti');
+		SystemLogger.debug(`Smarti - New conversation with Id ${ newSmartiConversation.id } analyzed: ${ analysisResult }`);
 		for (let i=0; i < messages.length; i++) {
 			Meteor.defer(()=>Meteor.call('markMessageAsSynced', messages[i]._id));
 		}
