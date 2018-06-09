@@ -199,7 +199,10 @@ export class SmartiAdapter {
 	 */
 	static analysisCompleted(roomId, conversationId, analysisResult) {
 
-		SystemLogger.debug(`Smarti analysis complete: update mapping and notify room ${ roomId } for conversation: ${ conversationId }`, JSON.stringify(analysisResult, null, 2));
+		if (roomId === null) {
+			roomId = RocketChat.models.LivechatExternalMessage.findOneByConversationId(conversationId).rid;
+		}
+		SystemLogger.debug(`Smarti analysis complete: update cache and notify room ${ roomId } for conversation: ${ conversationId }`, JSON.stringify(analysisResult, null, 2));
 		SmartiAdapter._updateMapping(roomId, conversationId);
 		RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', analysisResult);
 	}
@@ -240,10 +243,6 @@ export class SmartiAdapter {
 			}
 		}
 		return conversationId;
-	}
-
-	static getRoomId(conversationId) {
-		return RocketChat.models.LivechatExternalMessage.findOneByConversationId(conversationId).rid;
 	}
 
 	static _removeMapping(roomId) {
