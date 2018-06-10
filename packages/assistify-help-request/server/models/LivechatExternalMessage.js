@@ -1,4 +1,4 @@
-/* globals _, SystemLogger */
+/* globals */
 /**
  * Created by OliverJaegle on 01.08.2016.
  */
