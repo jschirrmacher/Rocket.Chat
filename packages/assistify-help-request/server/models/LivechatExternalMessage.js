@@ -1,4 +1,4 @@
-/* globals */
+/* globals _ */
 /**
  * Created by OliverJaegle on 01.08.2016.
  */
