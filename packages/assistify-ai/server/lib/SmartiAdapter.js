@@ -54,7 +54,7 @@ export class SmartiAdapter {
 		SystemLogger.debug('RocketChatMessage:', message);
 		SystemLogger.debug('Message:', requestBodyMessage);
 
-		const conversationId = SmartiAdapter.getConversationId(message.rid);
+		let conversationId = SmartiAdapter.getConversationId(message.rid);
 		if (conversationId) {
 			// update conversation
 			SystemLogger.debug(`Conversation ${ conversationId } found for channel ${ message.rid }, perform conversation update.`);
@@ -118,19 +118,24 @@ export class SmartiAdapter {
 			SystemLogger.debug('Creating conversation:', JSON.stringify(requestBodyConversation, null, '\t'));
 
 			// create conversation, send message along and request analysis
-			const conversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', requestBodyConversation);
+			const conversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', requestBodyConversation, (error) => {
+				SystemLogger.error(`Smarti - unexpected server error: ${ JSON.stringify(error, null, 2) } occured when creating a new conversation: ${ JSON.stringify(requestBodyConversation, null, 2) }`);
+			});
 			if (conversation && conversation.id) {
+				conversationId = conversation.id;
 				SystemLogger.debug('New conversation created and message will be synced now');
 				Meteor.defer(()=>Meteor.call('markMessageAsSynced', message._id));
-				SmartiAdapter._updateMapping(message.rid, conversation.id);
 			} else {
 				Meteor.defer(()=>Meteor.call('markRoomAsUnsynced', message.rid));
 			}
 		}
 
-		// request analysis results
-		SystemLogger.debug(`Smarti - onMmessage -> Get analysis asynch (callback=${ SmartiAdapter.rocketWebhookUrl }) for conversation ${ conversationId } and romm ${ message.rid }`);
-		SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ conversationId }/analysis?callback=${ SmartiAdapter.rocketWebhookUrl }`);
+		// conversation updated or created -> get the results
+		if (conversationId) {
+			SmartiAdapter._getAnalysisResult(message.rid, conversationId);
+		} else {
+			SystemLogger.error(`Smarti - updating/creating conversation faild for message [ id: ${ message._id } ] in room [ id: ${ message.rid } ]`);
+		}
 	}
 
 	/**
@@ -145,12 +150,10 @@ export class SmartiAdapter {
 			SystemLogger.debug(`Conversation ${ conversationId } found for channel ${ message.rid }`);
 			SystemLogger.debug(`Deleting message from conversation ${ conversationId } ...`);
 			SmartiProxy.propagateToSmarti(verbs.delete, `conversation/${ conversationId }/message/${ message._id }`);
-			SmartiAdapter._updateMapping(message.rid, conversationId);
+			SmartiAdapter._getAnalysisResult(message.rid, conversationId);
+		} else {
+			SystemLogger.error(`Smarti - deleting message from conversation faild after delete message [ id: ${ message._id } ] from room [ id: ${ message.rid } ]`);
 		}
-
-		// request analysis results
-		SystemLogger.debug(`Smarti - afterMessageDeleted -> Get analysis asynch (callback=${ SmartiAdapter.rocketWebhookUrl }) for conversation ${ conversationId } and romm ${ message.rid }`);
-		SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ conversationId }/analysis?callback=${ SmartiAdapter.rocketWebhookUrl }`); // asynch
 	}
 
 	/**
@@ -158,14 +161,14 @@ export class SmartiAdapter {
 	 *
 	 * @param room - the room just deleted
 	 */
-	static afterRoomErased(room) { //async
+	static afterRoomErased(room) {
 
 		const conversationId = SmartiAdapter.getConversationId(room._id);
 		if (conversationId) {
 			SmartiProxy.propagateToSmarti(verbs.delete, `/conversation/${ conversationId }`);
 			SmartiAdapter._removeMapping(room.id);
 		} else {
-			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
+			SystemLogger.error(`Smarti - deleting conversation faild after erasing room [ ${ room._id } ]`);
 		}
 	}
 
@@ -176,7 +179,8 @@ export class SmartiAdapter {
 	 *
 	 * @returns {*}
 	 */
-	static onClose(room) { //async
+	static onClose(room) {
+
 		const conversationId = SmartiAdapter.getConversationId(room._id);
 
 		if (conversationId) {
@@ -185,7 +189,7 @@ export class SmartiAdapter {
 				Meteor.defer(()=>Meteor.call('markRoomAsUnsynced', room._id));
 			}
 		} else {
-			SystemLogger.error(`Smarti - closing room failed: No conversation id for room: ${ room._id }`);
+			SystemLogger.error(`Smarti - setting conversation to complete faild when closing room [ ${ room._id } ]`);
 		}
 	}
 
@@ -200,9 +204,15 @@ export class SmartiAdapter {
 	static analysisCompleted(roomId, conversationId, analysisResult) {
 
 		if (roomId === null) {
-			roomId = RocketChat.models.LivechatExternalMessage.findOneByConversationId(conversationId).rid;
+			const conversationCacheEntry = RocketChat.models.LivechatExternalMessage.findOneByConversationId(conversationId);
+			if (conversationCacheEntry && conversationCacheEntry.rid) {
+				roomId = conversationCacheEntry.rid;
+			} else {
+				SystemLogger.error(`Smarti - no room found for conversation [ ${ conversationId } ] unable to notify room.`);
+			}
 		}
-		SystemLogger.debug(`Smarti analysis complete: update cache and notify room ${ roomId } for conversation: ${ conversationId }`, JSON.stringify(analysisResult, null, 2));
+		SystemLogger.debug('Smarti - retieved analysis result =', JSON.stringify(analysisResult, null, 2));
+		SystemLogger.debug(`Smarti - analysis complete -> update cache and notify room [ ${ roomId } ] for conversation [ ${ conversationId } ]`);
 		SmartiAdapter._updateMapping(roomId, conversationId);
 		RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', analysisResult);
 	}
@@ -215,8 +225,9 @@ export class SmartiAdapter {
 	 * @param {*} roomId - the room for which the Smarti conversationId shall be retrieved
 	 */
 	static getConversationId(roomId) {
+
 		let conversationId = null;
-		SystemLogger.info(`Retrieving conversation ID for channel: ${ roomId }`);
+		SystemLogger.debug(`Retrieving conversation ID for channel: ${ roomId }`);
 		const cachedSmartiResult = RocketChat.models.LivechatExternalMessage.findOneById(roomId);
 		if (cachedSmartiResult && cachedSmartiResult.conversationId) {
 			// cached conversation found
@@ -243,6 +254,14 @@ export class SmartiAdapter {
 			}
 		}
 		return conversationId;
+	}
+
+	static _getAnalysisResult(roomId, conversationId) {
+
+		// conversation updated or created => request analysis results
+		SmartiAdapter._updateMapping(roomId, conversationId);
+		SystemLogger.debug(`Smarti - conversation updated or created -> get analysis result asynch [ callback=${ SmartiAdapter.rocketWebhookUrl } ] for conversation: ${ conversationId } and room: ${ roomId }`);
+		SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ conversationId }/analysis?callback=${ SmartiAdapter.rocketWebhookUrl }`); // asynch
 	}
 
 	static _removeMapping(roomId) {
