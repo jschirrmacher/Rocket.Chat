@@ -5,37 +5,20 @@ import {SmartiAdapter} from '../lib/SmartiAdapter';
 
 Meteor.methods({
 
-	triggerResync(force) {
-		SystemLogger.info('Full Smarti resync triggered');
-
-		let query = {};
-		if (!force || force !== true) {
-			query = {$or: [{outOfSync: true}, {outOfSync: {$exists: false}}]};
+	triggerResync() {
+		if (!RocketChat.authz.hasRole(Meteor.userId(), 'admin')) {
+			throw new Meteor.Error(`SmartiResynch - triggerResync not permitted for user [ ${ Meteor.userId() } ]`);
 		}
-
-		query.t = 'r';
-		const requests = RocketChat.models.Rooms.model.find(query).fetch();
-		SystemLogger.info('Number of Requests to sync: ', requests.length);
-		for (let i=0; i < requests.length; i++) {
-			Meteor.defer(()=>Meteor.call('tryResync', requests[i]._id, force));
-		}
-
-		query.t = 'e';
-		const topics = RocketChat.models.Rooms.model.find(query).fetch();
-		SystemLogger.info('Number of Topics to sync: ', topics.length);
-		for (let i=0; i < topics.length; i++) {
-			Meteor.defer(()=>Meteor.call('tryResync', topics[i]._id), force);
-		}
-
-		return {
-			message: 'sync-triggered-successfully'
-		};
+		return SmartiAdapter.resynch(false);
 	},
 
 	triggerFullResync() {
-
+		if (!RocketChat.authz.hasRole(Meteor.userId(), 'admin')) {
+			throw new Meteor.Error(`SmartiResynch - triggerResync not permitted for user [ ${ Meteor.userId() } ]`);
+		}
+		// Todo: Should this method directly access the LiveChatExternalMessage collection?
 		RocketChat.models.LivechatExternalMessage.clear();
-		Meteor.defer(()=>Meteor.call('triggerResync', true));
+		return SmartiAdapter.resynch(true);
 	},
 
 	markMessageAsSynced(messageId) {
@@ -67,12 +50,12 @@ Meteor.methods({
 		SystemLogger.debug('Room Id: ', rid, ' is out of sync');
 	},
 
-	tryResync(rid, force) {
+	tryResync(rid, ignoreSynchFlag) {
 		SystemLogger.debug('Sync all unsynced messages in room: ', rid);
 		const room = RocketChat.models.Rooms.findOneById(rid);
 		const messageDB = RocketChat.models.Messages;
 		const unsync = messageDB.find({ lastSync: { $exists: false }, rid, t: { $exists: false } }).fetch();
-		if (!force || force !== true) {
+		if (!ignoreSynchFlag || ignoreSynchFlag !== true) {
 			if (unsync.length === 0 && !room.outOfSync) {
 				SystemLogger.debug('Room is already in sync');
 				return true;
@@ -80,27 +63,18 @@ Meteor.methods({
 				SystemLogger.debug('Messages out of sync: ', unsync.length);
 			}
 		}
-		let conversation;
 
-		// conversation exists for channel?
-		SystemLogger.debug('Smarti - Trying legacy service to retrieve conversation ID...');
-
-		conversation = SmartiProxy.propagateToSmarti(verbs.get, `legacy/rocket.chat?channel_id=${ rid }`, null, (error) => {
-			// 404 is expected if no mapping exists
-			if (typeof error.response === 'undefined') {
-				return null;
-			}
-			if (error.response.statusCode === 404) {
-				return false;
+		SmartiProxy.propagateToSmarti(verbs.get, 'system/info', null, (response) => {
+			// if Smarti is not available stop
+			if (response.statusCode !== 200) {
+				return;
 			}
 		});
 
-		// console.log('Conversation from legacy', conversation);
+		const conversationId = SmartiAdapter.getConversationId(rid);
+		let conversation = {};
 
-		if (conversation === null) {
-			SystemLogger.debug('Can not sync Smarti - connection not available');
-			return false;
-		} else if (!conversation) {
+		if (!conversationId) {
 			SystemLogger.debug('Conversation not found - create new conversation');
 			const supportArea = room.parentRoomId || room.topic || room.expertise;
 			conversation = {
@@ -117,7 +91,7 @@ Meteor.methods({
 				}
 			};
 		} else {
-			SmartiProxy.propagateToSmarti(verbs.delete, `conversation/${ conversation.id }`, null);
+			SmartiProxy.propagateToSmarti(verbs.delete, `conversation/${ conversationId }`, null);
 			SystemLogger.debug('Deleted old conversation - ready to sync');
 		}
 
@@ -166,5 +140,32 @@ Meteor.methods({
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is in sync now');
 		return true;
+	}
+});
+
+/**
+ * Limit exposed methods to prevent DOS.
+ */
+
+RocketChat.RateLimiter.limitMethod('triggerResync', 1, 2000, {
+	userId() { return true; }
+});
+RocketChat.RateLimiter.limitMethod('triggerFullResync', 1, 2000, {
+	userId() { return true; }
+});
+
+RocketChat.RateLimiter.limitMethod('tryResync', 5, 1000, {
+	userId(userId) {
+		return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+	}
+});
+RocketChat.RateLimiter.limitMethod('markMessageAsSynced', 5, 1000, {
+	userId(userId) {
+		return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
+	}
+});
+RocketChat.RateLimiter.limitMethod('markRoomAsUnsynced', 5, 1000, {
+	userId(userId) {
+		return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 	}
 });

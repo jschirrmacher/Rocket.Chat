@@ -476,8 +476,8 @@ describe('[Test Sync]', function() {
 			});
 
 			it('Trigger full resync', (done)=> {
-				sideNav.accountMenu.waitForVisible(5000);
-				sideNav.accountMenu.click();
+				sideNav.sidebarMenu.waitForVisible(5000);
+				sideNav.sidebarMenu.click();
 				sideNav.admin.waitForVisible(5000);
 				sideNav.admin.click();
 				assistify.assitifyLink.waitForVisible(5000);

@@ -134,6 +134,9 @@ class Assistify extends Page {
 	get numberOfRequests() {
 		return browser.element('#rocket-chat > aside > div.rooms-list > h3:nth-child(9) > span.badge');
 	}
+	get resync() {
+		return browser.element('[data-setting="Assistify_AI_Resync_Full"]');
+	}
 
 	escape() {
 		browser.keys(Keys.ESCAPE);

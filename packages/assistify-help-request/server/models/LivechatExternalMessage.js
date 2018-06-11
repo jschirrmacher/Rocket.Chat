@@ -14,7 +14,7 @@ _.extend(RocketChat.models.LivechatExternalMessage, {
 		return this.findOne(query, options);
 	},
 	clear() {
-		const ids = this.find({}, { _id: 1 }).map(function(item) {
+		const ids = this.find({ knowledgeProvider: 'smarti' }).map(function(item) {
 			return item._id;
 		});
 		const query = { _id: { $in: ids } };

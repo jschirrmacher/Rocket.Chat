@@ -256,6 +256,33 @@ export class SmartiAdapter {
 		return conversationId;
 	}
 
+	static resynch(ignoreSynchFlag) {
+		SystemLogger.info('Smarti resync triggered');
+
+		let query = {};
+		if (!ignoreSynchFlag || ignoreSynchFlag !== true) {
+			query = {$or: [{outOfSync: true}, {outOfSync: {$exists: false}}]};
+		}
+
+		query.t = 'r';
+		const requests = RocketChat.models.Rooms.model.find(query).fetch();
+		SystemLogger.info('Number of Requests to sync: ', requests.length);
+		for (let i = 0; i < requests.length; i++) {
+			Meteor.defer(() => Meteor.call('tryResync', requests[i]._id, ignoreSynchFlag));
+		}
+
+		query.t = 'e';
+		const topics = RocketChat.models.Rooms.model.find(query).fetch();
+		SystemLogger.info('Number of Topics to sync: ', topics.length);
+		for (let i = 0; i < topics.length; i++) {
+			Meteor.defer(() => Meteor.call('tryResync', topics[i]._id), ignoreSynchFlag);
+		}
+
+		return {
+			message: 'sync-triggered-successfully'
+		};
+	}
+
 	static _getAnalysisResult(roomId, conversationId) {
 
 		// conversation updated or created => request analysis results
