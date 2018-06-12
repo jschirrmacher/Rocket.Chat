@@ -79,13 +79,15 @@ Meteor.methods({
 	searchConversations(queryParams) {
 		const queryString = querystring.stringify(queryParams);
 		SystemLogger.debug('QueryString: ', queryString);
-		return RocketChat.RateLimiter.limitFunction(
+		const searchResult = RocketChat.RateLimiter.limitFunction(
 			SmartiProxy.propagateToSmarti, 5, 1000, {
 				userId(userId) {
 					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 				}
 			}
 		)(verbs.get, `conversation/search?${ queryString }`);
+		SystemLogger.debug('SearchResult: ', JSON.stringify(searchResult, null, 2));
+		return searchResult;
 	}
 });
 
@@ -127,7 +129,9 @@ function delayedReload() {
 	timeoutHandle = Meteor.setTimeout(loadSmarti, 86400000);
 }
 
-
+/**
+ * TODO: Think about limiting this methods
+ */
 Meteor.methods({
 
 	/**
