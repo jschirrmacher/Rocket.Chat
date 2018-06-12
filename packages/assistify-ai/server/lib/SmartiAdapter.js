@@ -389,7 +389,7 @@ export class SmartiAdapter {
 			SystemLogger.error(`Smarti - unexpected server error: ${ JSON.stringify(error, null, 2) } occured when creating a new conversation: ${ JSON.stringify(conversationBody, null, 2) }`);
 		});
 		if (!conversation && !conversation.id) {
-			throw new Meteor.Error('Could not create conversation for room:', rid);
+			throw new Meteor.Error('Could not create conversation for room:', room._id);
 		}
 		SystemLogger.debug(`Smarti - New conversation with Id ${ conversation.id } created`);
 		return conversation;
