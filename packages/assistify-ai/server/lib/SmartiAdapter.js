@@ -21,12 +21,12 @@ export class SmartiAdapter {
 	/**
 	 * Cretaes an empty conversation when a new "Smarti" enabled room is created.
 	 * Currently called by createExpertise, createRequestFromRoom, createEquestFromRoomId.
-	 * 
+	 *
 	 * Todo: It would be nice to have this registered as a hook,
 	 * but there's no good implementation of this in the core:
 	 * See createRoom.js: RocketChat.callbacks.run('afterCreateChannel', owner, room);
-	 * 
-	 * @param {String} rid 
+	 *
+	 * @param {String} rid
 	 */
 	static afterCreateChannel(rid) {
 		const room = RocketChat.models.Rooms.findOneById(rid);
@@ -169,17 +169,17 @@ export class SmartiAdapter {
 		if (cachedSmartiResult && cachedSmartiResult.conversationId) {
 			// cached conversation found
 			conversationId = cachedSmartiResult.conversationId;
-		} 
-		
+		}
+
 		/**
 		 * Since the Rocket.Chat legacy enpoint in Smarti, does not filter out deleted conversations
 		 * we can't rely on it. So use the Assistify.Chat Cache for now.
-		 * 
+		 *
 		 * See https://github.com/redlink-gmbh/smarti/issues/257
 		 * See https://github.com/redlink-gmbh/smarti/issues/259
 		 */
 
-		 /* else {
+		/* else {
 			// uncached conversation
 			SystemLogger.debug(`No cached Smarti conversation found for roomId: ${ roomId }, `);
 			SystemLogger.debug('Trying Smarti legacy service to retrieve conversation...');
@@ -204,7 +204,7 @@ export class SmartiAdapter {
 	}
 
 	/**
-	 * At any point in time when the anylsis for a room has been done (onClose, onMessage), 
+	 * At any point in time when the anylsis for a room has been done (onClose, onMessage),
 	 * analysisCompleted() updates the mapping and notifies the room, in order to reload the Smarti result representation
 	 *
 	 * @param roomId - the RC room Id
@@ -240,7 +240,7 @@ export class SmartiAdapter {
 
 	/**
 	 * Triggers the re-synchronization with Smarti.
-	 * 
+	 *
 	 * @param {boolean} ignoreSyncFlag - if 'true' the dirty flag for outdated rooms and messages will be ignored. If 'false' only rooms and messages are synchronized that are marked as outdated.
 	 */
 	static resync(ignoreSyncFlag) {
@@ -259,14 +259,14 @@ export class SmartiAdapter {
 		const requests = RocketChat.models.Rooms.model.find(query).fetch();
 		SystemLogger.info('Number of Requests to sync: ', requests.length);
 		for (let i = 0; i < requests.length; i++) {
-			Meteor.defer(() => SmartiAdapter._tryResync(requests[i]._id, ignoreSynchFlag));
+			Meteor.defer(() => SmartiAdapter._tryResync(requests[i]._id, ignoreSyncFlag));
 		}
 
 		query.t = 'e';
 		const topics = RocketChat.models.Rooms.model.find(query).fetch();
 		SystemLogger.info('Number of Topics to sync: ', topics.length);
 		for (let i = 0; i < topics.length; i++) {
-			Meteor.defer(() => SmartiAdapter._tryResync(topics[i]._id, ignoreSynchFlag));
+			Meteor.defer(() => SmartiAdapter._tryResync(topics[i]._id, ignoreSyncFlag));
 		}
 
 		// Todo: What's about livechats?
@@ -278,7 +278,7 @@ export class SmartiAdapter {
 
 	/**
 	 * Performs the synchronization for a singel room/conversation.
-	 * 
+	 *
 	 * @param {String} rid - the id of the room to sync
 	 * @param {boolean} ignoreSyncFlag @see resync(ignoreSyncFlag)
 	 */
@@ -340,11 +340,11 @@ export class SmartiAdapter {
 	/**
 	 * Builds a new conversation and posts it to Smarti.
 	 * If messages are not passed, a conversation without messages will created for the given room in Smarti.
-	 * 
+	 *
 	 * @param {object} room - the room object
 	 * @param {Array} messages - the messages of that room
-	 * 
-	 * @throws {Meteor.Error} - if the conversation could not be created in Smarti 
+	 *
+	 * @throws {Meteor.Error} - if the conversation could not be created in Smarti
 	 */
 	static _createAndPostConversation(room, messages) {
 
@@ -364,7 +364,7 @@ export class SmartiAdapter {
 			}
 		};
 		if (room.closedAt) {
-			conversation.meta.status = 'Complete';
+			conversationBody.meta.status = 'Complete';
 		}
 
 		// add messages to conversation, if present
@@ -389,7 +389,7 @@ export class SmartiAdapter {
 			SystemLogger.error(`Smarti - unexpected server error: ${ JSON.stringify(error, null, 2) } occured when creating a new conversation: ${ JSON.stringify(conversationBody, null, 2) }`);
 		});
 		if (!conversation && !conversation.id) {
-			throw new Meteor.Error('Could not create conversation for room:', message.rid);
+			throw new Meteor.Error('Could not create conversation for room:', rid);
 		}
 		SystemLogger.debug(`Smarti - New conversation with Id ${ conversation.id } created`);
 		return conversation;
@@ -399,7 +399,7 @@ export class SmartiAdapter {
 	 * Returns the support area for a given room.
 	 * The "support_area" in Smarti is an optional property.
 	 * A historic conversation belonging to the same support_are increases relevance.
-	 * 
+	 *
 	 * @param {object} room - the room to get the support area for
 	 */
 	static _getSupportArea(room) {
@@ -441,9 +441,9 @@ export class SmartiAdapter {
 	static _markRoomAsSynced(rid) {
 		RocketChat.models.Rooms.model.update(
 			{ _id: rid },
-			{ 
+			{
 				$set: {
-					outOfSync: false 
+					outOfSync: false
 				}
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is in sync');
