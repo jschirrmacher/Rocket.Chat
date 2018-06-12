@@ -165,7 +165,7 @@ export class SmartiAdapter {
 		if (cachedSmartiResult && cachedSmartiResult.conversationId) {
 			// cached conversation found
 			conversationId = cachedSmartiResult.conversationId;
-		} else {
+		} /* else {
 			// uncached conversation
 			SystemLogger.debug(`No cached Smarti conversation found for roomId: ${ roomId }, `);
 			SystemLogger.debug('Trying Smarti legacy service to retrieve conversation...');
@@ -185,7 +185,7 @@ export class SmartiAdapter {
 			} else {
 				SystemLogger.debug(`Smarti - no conversation found for room: ${ roomId }`);
 			}
-		}
+		} */
 		return conversationId;
 	}
 
