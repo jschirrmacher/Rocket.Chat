@@ -297,10 +297,10 @@ export class SmartiAdapter {
 		let messages;
 		// todo: filter out system messages (property: t exists)
 		if (room.closedAt) {
-			messages = messageDB.find({rid, ts: {$lt: room.closedAt}}, { sort: { ts: 1 } }).fetch();
+			messages = messageDB.find({rid, ts: {$lt: room.closedAt}, t:{$exists: false}}, { sort: { ts: 1 } }).fetch();
 			conversation.meta.status = 'Complete';
 		} else {
-			messages = messageDB.find({rid}, { sort: { ts: 1 } }).fetch();
+			messages = messageDB.find({rid, t:{$exists: false}}, { sort: { ts: 1 } }).fetch();
 		}
 
 		conversation.messages = [];
