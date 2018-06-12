@@ -19,6 +19,12 @@ export class SmartiAdapter {
 		return RocketChat.settings.get('Assistify_AI_Smarti_Domain');
 	}
 
+	static afterCreateChannel(rid) {
+		const room = RocketChat.models.Rooms.findOneById(rid);
+		SystemLogger.debug('Room created: ', room);
+		SmartiAdapter._createConversation(room);
+	}
+
 	/**
 	 * Event implementation that posts the message to Smarti.
 	 *
@@ -34,6 +40,18 @@ export class SmartiAdapter {
 	 * @returns {*}
 	 */
 	static onMessage(message) {
+
+		let conversationId = SmartiAdapter.getConversationId(message.rid);
+		if (!conversationId) {
+			// create conversation
+			SystemLogger.debug(`Conversation not found for room ${ message.rid }, create a new conversation.`);
+			const room = RocketChat.models.Rooms.findOneById(message.rid);
+			const conversation = SmartiAdapter._createConversation(room);
+			if (!conversation && !conversation.id) {
+				throw new Meteor.Error('Could not create conversation for room:', message.rid);
+			}
+			conversationId = conversation.id;
+		}
 
 		const requestBodyMessage = {
 			'id': message._id,
@@ -51,76 +69,30 @@ export class SmartiAdapter {
 			requestBodyMessage.metadata.skipAnalysis = true;
 		}
 
-		SystemLogger.debug('RocketChatMessage:', message);
-		SystemLogger.debug('Message:', requestBodyMessage);
-
-		let conversationId = SmartiAdapter.getConversationId(message.rid);
-		if (conversationId) {
-			// update conversation
-			SystemLogger.debug(`Conversation ${ conversationId } found for channel ${ message.rid }, perform conversation update.`);
-			let request_result;
-			if (message.editedAt) {
-				SystemLogger.debug('Trying to update existing message...');
-				// update existing message
-				request_result = SmartiProxy.propagateToSmarti(verbs.put, `conversation/${ conversationId }/message/${ requestBodyMessage.id }`, requestBodyMessage, (error) => {
-					// 404 is expected if message doesn't exist
-					if (!error.response || error.response.statusCode === 404) {
-						SystemLogger.debug('Message not found!');
-						SystemLogger.debug('Adding new message to conversation...');
-						request_result = SmartiProxy.propagateToSmarti(verbs.post, `conversation/${ conversationId }/message`, requestBodyMessage);
-					}
-				});
-			} else {
-				SystemLogger.debug('Adding new message to conversation...');
-				request_result = SmartiProxy.propagateToSmarti(verbs.post, `conversation/${ conversationId }/message`, requestBodyMessage);
-			}
-			if (request_result) {
-				SystemLogger.debug('Conversation found and message will be synced now');
-				Meteor.defer(() => SmartiAdapter._markMessageAsSynced(message._id));
-			} else {
-				Meteor.defer(() => SmartiAdapter._markRoomAsUnsynced(message.rid));
-			}
-		} else {
-			// create conversation
-			SystemLogger.debug(`Conversation not found for room ${ message.rid }, create a new conversation.`);
-
-			const room = RocketChat.models.Rooms.findOneById(message.rid);
-			const supportArea = this._getSupportArea(room);
-			const requestBodyConversation = {
-				'meta': {
-					'support_area': [supportArea],
-					'channel_id': [message.rid]
-				},
-				'user': {
-					'id': room.u ? room.u._id : room.v._id
-				},
-				'messages': [requestBodyMessage],
-				'context': {
-					'contextType': 'rocket.chat'
+		SystemLogger.debug(`Conversation ${ conversationId } found for channel ${ message.rid }, perform conversation update.`);
+		let request_result;
+		if (message.editedAt) {
+			SystemLogger.debug('Trying to update existing message...');
+			// update existing message
+			request_result = SmartiProxy.propagateToSmarti(verbs.put, `conversation/${ conversationId }/message/${ requestBodyMessage.id }`, requestBodyMessage, (error) => {
+				// 404 is expected if message doesn't exist
+				if (!error.response || error.response.statusCode === 404) {
+					SystemLogger.debug('Message not found!');
+					SystemLogger.debug('Adding new message to conversation...');
+					request_result = SmartiProxy.propagateToSmarti(verbs.post, `conversation/${ conversationId }/message`, requestBodyMessage);
 				}
-			};
-
-			SystemLogger.debug('Creating conversation:', JSON.stringify(requestBodyConversation, null, '\t'));
-
-			// create conversation, send message along and request analysis
-			const conversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', requestBodyConversation, (error) => {
-				SystemLogger.error(`Smarti - unexpected server error: ${ JSON.stringify(error, null, 2) } occured when creating a new conversation: ${ JSON.stringify(requestBodyConversation, null, 2) }`);
 			});
-			if (conversation && conversation.id) {
-				conversationId = conversation.id;
-				SystemLogger.debug('New conversation created and message will be synced now');
-				Meteor.defer(() => SmartiAdapter._markMessageAsSynced(message._id));
-			} else {
-				Meteor.defer(() => SmartiAdapter._markRoomAsUnsynced(message.rid));
-			}
+		} else {
+			SystemLogger.debug('Adding new message to conversation...');
+			request_result = SmartiProxy.propagateToSmarti(verbs.post, `conversation/${ conversationId }/message`, requestBodyMessage);
 		}
 
-		// conversation updated or created -> get the results
-		if (conversationId) {
-			SmartiAdapter._getAnalysisResult(message.rid, conversationId);
+		if (request_result) {
+			Meteor.defer(() => SmartiAdapter._markMessageAsSynced(message._id));
 		} else {
-			SystemLogger.error(`Smarti - updating/creating conversation faild for message [ id: ${ message._id } ] in room [ id: ${ message.rid } ]`);
+			Meteor.defer(() => SmartiAdapter._markRoomAsUnsynced(message.rid));
 		}
+		SmartiAdapter._getAnalysisResult(message.rid, conversationId);
 	}
 
 	/**
@@ -323,6 +295,7 @@ export class SmartiAdapter {
 			}
 		};
 		let messages;
+		// todo: filter out system messages (property: t exists)
 		if (room.closedAt) {
 			messages = messageDB.find({rid, ts: {$lt: room.closedAt}}, { sort: { ts: 1 } }).fetch();
 			conversation.meta.status = 'Complete';
@@ -367,6 +340,28 @@ export class SmartiAdapter {
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is in sync now');
 		return true;
+	}
+
+	static _createConversation(room) {
+		const supportArea = SmartiAdapter._getSupportArea(room);
+		const emptyConversation = {
+			'meta': {
+				'support_area': [supportArea],
+				'channel_id': [room._id]
+			},
+			'user': {
+				'id': room.u ? room.u._id : room.v._id
+			},
+			'messages': [],
+			'context': {
+				'contextType': 'rocket.chat'
+			}
+		};
+
+		const conversation = SmartiProxy.propagateToSmarti(verbs.post, 'conversation', emptyConversation, (error) => {
+			SystemLogger.error(`Smarti - unexpected server error: ${ JSON.stringify(error, null, 2) } occured when creating a new conversation: ${ JSON.stringify(emptyConversation, null, 2) }`);
+		});
+		return conversation;
 	}
 
 	static _getSupportArea(room) {
