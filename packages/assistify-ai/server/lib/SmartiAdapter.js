@@ -164,10 +164,10 @@ export class SmartiAdapter {
 	static getConversationId(roomId) {
 
 		let conversationId = null;
-		SystemLogger.debug(`Retrieving conversation ID for channel: ${ roomId }`);
 		const cachedSmartiResult = RocketChat.models.LivechatExternalMessage.findOneById(roomId);
 		if (cachedSmartiResult && cachedSmartiResult.conversationId) {
 			// cached conversation found
+			SystemLogger.debug(`Found cached conversation ${ cachedSmartiResult.conversationId } for room ${ roomId }`);
 			conversationId = cachedSmartiResult.conversationId;
 		}
 
@@ -246,9 +246,10 @@ export class SmartiAdapter {
 	static resync(ignoreSyncFlag) {
 		SystemLogger.info('Smarti resync triggered');
 
-		if (ignoreSyncFlag) {
+		// Don't flush the cache if we do not use the legacy endpoint
+		/* if (ignoreSyncFlag) {
 			SmartiAdapter._clearMapping();
-		}
+		} */
 
 		let query = {};
 		if (!ignoreSyncFlag || ignoreSyncFlag !== true) {
