@@ -92,6 +92,7 @@ export class SmartiAdapter {
 
 		if (request_result) {
 			Meteor.defer(() => SmartiAdapter._markMessageAsSynced(message._id));
+			Meteor.defer(() => SmartiAdapter._tryResync(message.rid, false));
 		} else {
 			// if the message could not be synced this time, re-synch the complete room next time
 			Meteor.defer(() => SmartiAdapter._markRoomAsUnsynced(message.rid));
@@ -270,7 +271,12 @@ export class SmartiAdapter {
 			Meteor.defer(() => SmartiAdapter._tryResync(topics[i]._id, ignoreSyncFlag));
 		}
 
-		// Todo: What's about livechats?
+		query.t = 'l';
+		const livechat = RocketChat.models.Rooms.model.find(query).fetch();
+		SystemLogger.info('Number of Topics to sync: ', livechat.length);
+		for (let i = 0; i < livechat.length; i++) {
+			Meteor.defer(() => SmartiAdapter._tryResync(livechat[i]._id, ignoreSyncFlag));
+		}
 
 		return {
 			message: 'sync-triggered-successfully'
