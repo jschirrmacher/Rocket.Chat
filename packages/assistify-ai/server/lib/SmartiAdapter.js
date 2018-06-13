@@ -31,7 +31,8 @@ export class SmartiAdapter {
 	static afterCreateChannel(rid) {
 		const room = RocketChat.models.Rooms.findOneById(rid);
 		SystemLogger.debug('Room created: ', room);
-		SmartiAdapter._createAndPostConversation(room);
+		const conversationId = SmartiAdapter._createAndPostConversation(room).id;
+		SmartiAdapter._updateMapping(rid, conversationId);
 	}
 
 	/**
@@ -92,12 +93,12 @@ export class SmartiAdapter {
 
 		if (request_result) {
 			Meteor.defer(() => SmartiAdapter._markMessageAsSynced(message._id));
+			SmartiAdapter._getAnalysisResult(message.rid, conversationId);
 			Meteor.defer(() => SmartiAdapter._tryResync(message.rid, false));
 		} else {
 			// if the message could not be synced this time, re-synch the complete room next time
 			Meteor.defer(() => SmartiAdapter._markRoomAsUnsynced(message.rid));
 		}
-		SmartiAdapter._getAnalysisResult(message.rid, conversationId);
 	}
 
 	/**
