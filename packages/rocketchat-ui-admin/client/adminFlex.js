@@ -1,6 +1,5 @@
 import _ from 'underscore';
 import s from 'underscore.string';
-import {PrivateSettingsCachedCollection} from './SettingsCachedCollection';
 
 Template.adminFlex.onCreated(function() {
 	this.settingsFilter = new ReactiveVar('');

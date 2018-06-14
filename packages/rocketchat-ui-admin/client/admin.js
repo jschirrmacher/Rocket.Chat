@@ -2,7 +2,6 @@
 import _ from 'underscore';
 import s from 'underscore.string';
 import toastr from 'toastr';
-import {PrivateSettingsCachedCollection} from './SettingsCachedCollection';
 
 const TempSettings = new Mongo.Collection(null);
 
