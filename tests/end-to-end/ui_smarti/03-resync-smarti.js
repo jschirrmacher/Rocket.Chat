@@ -482,16 +482,12 @@ describe('[Test Sync]', function() {
 				sideNav.openAdminView();
 				assistify.assistifyAdminUi.waitForVisible(5000);
 				assistify.assistifyAdminUi.click();
-				console.log('assistify pressed');
 				assistify.knowledgebaseUiExpand.waitForVisible(5000);
 				assistify.knowledgebaseUiExpand.click();
-				console.log('expand pressed');
 				assistify.resyncButton.waitForVisible(5000);
 				assistify.resyncButton.click();
-				console.log('resync pressed');
 				sideNav.preferencesClose.waitForVisible(5000);
 				sideNav.preferencesClose.click();
-				console.log('close pressed');
 				browser.pause(500);
 				request.get('/conversation/')
 					.auth(credentials['username'], credentials['password'])
@@ -547,8 +543,6 @@ describe('[Test Sync]', function() {
 	});
 
 	describe('[Test auto Sync]', function() {
-		let conversationId;
-
 		it('Send synced message in Request', (done)=> {
 			browser.pause(500);
 			try {
@@ -571,7 +565,6 @@ describe('[Test Sync]', function() {
 					for (let i=0; i < msgs.length; i++) {
 						if (msgs[i].content === messages[5]) {
 							found = true;
-							conversationId = res.body.content[0].id;
 							break;
 						}
 					}
