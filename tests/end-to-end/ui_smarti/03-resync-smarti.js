@@ -337,9 +337,10 @@ describe('[Test Sync]', function() {
 			before(() => {
 				try {
 					sideNav.openChannel(topicName);
-					assistify.closeTopic(topicName);
+					assistify.deleteRoom(topicName);
 					assistify.createTopic(topicName, topicExpert);
 				} catch (e) {
+					console.log(e);
 					assistify.createTopic(topicName, topicExpert);
 				}
 			});
@@ -379,7 +380,7 @@ describe('[Test Sync]', function() {
 				try {
 					sideNav.searchChannel(sync_request1);
 					console.log('HelpRequest already Exists');
-					assistify.closeTopic(sync_request1);
+					assistify.deleteRoom(sync_request1);
 					assistify.createHelpRequest(topicName, messages[1], sync_request1);
 				} catch (e) {
 					assistify.createHelpRequest(topicName, messages[1], sync_request1);
@@ -417,9 +418,11 @@ describe('[Test Sync]', function() {
 				try {
 					sideNav.searchChannel(unsync_request1);
 					console.log('HelpRequest already Exists');
-					assistify.closeTopic(unsync_request1);
+					assistify.deleteRoom(unsync_request1);
+					console.log('deleted Room');
 					assistify.createHelpRequest(topicName, messages[2], unsync_request1);
 				} catch (e) {
+					console.log(e);
 					assistify.createHelpRequest(topicName, messages[2], unsync_request1);
 					console.log('New Help Request Created');
 				}
@@ -453,7 +456,7 @@ describe('[Test Sync]', function() {
 				try {
 					sideNav.searchChannel(unsync_request2);
 					console.log('HelpRequest already Exists');
-					assistify.closeTopic(unsync_request2);
+					assistify.deleteRoom(unsync_request2);
 					assistify.createHelpRequest(topicName, messages[4], unsync_request2);
 				} catch (e) {
 					assistify.createHelpRequest(topicName, messages[4], unsync_request2);
@@ -476,19 +479,19 @@ describe('[Test Sync]', function() {
 			});
 
 			it('Trigger full resync', (done)=> {
-				sideNav.sidebarMenu.waitForVisible(5000);
-				sideNav.sidebarMenu.click();
-				sideNav.admin.waitForVisible(5000);
-				sideNav.admin.click();
-				assistify.assitifyLink.waitForVisible(5000);
-				assistify.assitifyLink.click();
-				assistify.expandKnowledgebaseSettings.waitForVisible(5000);
-				assistify.expandKnowledgebaseSettings.click();
-				assistify.resyncBtn.waitForVisible(5000);
-				assistify.resyncBtn.click();
+				sideNav.openAdminView();
+				assistify.assistifyAdminUi.waitForVisible(5000);
+				assistify.assistifyAdminUi.click();
+				console.log('assistify pressed');
+				assistify.knowledgebaseUiExpand.waitForVisible(5000);
+				assistify.knowledgebaseUiExpand.click();
+				console.log('expand pressed');
+				assistify.resyncButton.waitForVisible(5000);
+				assistify.resyncButton.click();
+				console.log('resync pressed');
 				sideNav.preferencesClose.waitForVisible(5000);
 				sideNav.preferencesClose.click();
-				sideNav.preferencesClose.click();
+				console.log('close pressed');
 				browser.pause(500);
 				request.get('/conversation/')
 					.auth(credentials['username'], credentials['password'])
@@ -507,19 +510,19 @@ describe('[Test Sync]', function() {
 		describe('[Cleanup Full Sync Test', ()=> {
 			it('Remove sync Request', (done)=> {
 				console.log('TopicName for cleanup', sync_request1);
-				assistify.closeTopic(sync_request1);
+				assistify.deleteRoom(sync_request1);
 				done();
 			});
 
 			it('Remove 1. unsync Request', (done)=> {
 				console.log('TopicName for cleanup', unsync_request1);
-				assistify.closeTopic(unsync_request1);
+				assistify.deleteRoom(unsync_request1);
 				done();
 			});
 
 			it('Remove 2. unsync Request', (done)=> {
 				console.log('TopicName for cleanup', unsync_request2);
-				assistify.closeTopic(unsync_request2);
+				assistify.deleteRoom(unsync_request2);
 				done();
 			});
 
@@ -551,7 +554,7 @@ describe('[Test Sync]', function() {
 			try {
 				sideNav.searchChannel(autosync_request1);
 				console.log('HelpRequest already Exists');
-				assistify.closeTopic(autosync_request1);
+				assistify.deleteRoom(autosync_request1);
 				assistify.createHelpRequest(topicName, messages[5], autosync_request1);
 			} catch (e) {
 				assistify.createHelpRequest(topicName, messages[5], autosync_request1);
@@ -620,14 +623,7 @@ describe('[Test Sync]', function() {
 		describe('[Cleanup Full Sync Test', ()=> {
 			it('Remove sync Request', ()=> {
 				console.log('TopicName for cleanup', autosync_request1);
-				assistify.closeTopic(autosync_request1);
-			});
-
-			it('Cleanup all Conversations in Smarti', (done)=> {
-				request.del(`/conversation/${ conversationId }`)
-					.auth(credentials['username'], credentials['password'])
-					.expect(204)
-					.end(done);
+				assistify.deleteRoom(autosync_request1);
 			});
 		});
 	});

@@ -152,6 +152,13 @@ class SideNav extends Page {
 		this.logout.waitForVisible(5000);
 		this.logout.click();
 	}
+
+	openAdminView() {
+		this.sidebarMenu.waitForVisible(5000);
+		this.sidebarMenu.click();
+		this.admin.waitForVisible(5000);
+		this.admin.click();
+	}
 }
 
 module.exports = new SideNav();
