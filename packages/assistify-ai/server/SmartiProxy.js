@@ -48,8 +48,6 @@ export class SmartiProxy {
 				SystemLogger.debug('Got unexpected result from Smarti', method, 'to', url, 'response', JSON.stringify(response));
 			}
 		} catch (error) {
-			SystemLogger.error('Could not complete', method, 'to', url, error.response);
-			SystemLogger.debug(error);
 
 			if (onError) {
 				const recoveryResult = onError(error);
