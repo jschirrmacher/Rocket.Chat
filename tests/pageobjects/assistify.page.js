@@ -226,9 +226,9 @@ class Assistify extends Page {
 		browser.pause(300);
 
 		if (message) {
+			browser.pause(2000);
 			this.firstRequestMessage.waitForVisible(5000);
 			this.firstRequestMessage.setValue(message);
-			browser.pause(1000);
 		}
 
 		browser.waitUntil(function() {
