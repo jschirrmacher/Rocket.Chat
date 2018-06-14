@@ -238,6 +238,10 @@ export class SmartiAdapter {
 	static resync(ignoreSyncFlag) {
 		SystemLogger.info('Smarti resync triggered');
 
+		if (!SmartiAdapter._smartiAvailable()) {
+			return false;
+		}
+
 		// flush the cache
 		if (ignoreSyncFlag) {
 			SmartiAdapter._clearMapping();
@@ -283,13 +287,6 @@ export class SmartiAdapter {
 	static _tryResync(rid, ignoreSyncFlag) {
 
 		SystemLogger.debug('Sync messages for room: ', rid);
-
-		// if Smarti is not available stop immediately by throwing an Exception
-		SmartiProxy.propagateToSmarti(verbs.get, 'system/info', null, (response) => {
-			if (response.statusCode !== 200) {
-				throw new Meteor.Error('Smarti not reachable');
-			}
-		});
 
 		// only resync rooms containing outdated messages, if a delta sync is requested
 		const room = RocketChat.models.Rooms.findOneById(rid);
@@ -388,7 +385,7 @@ export class SmartiAdapter {
 		});
 		if (!conversation && !conversation.id) {
 			const e = new Meteor.Error('Could not create conversation for room:', room._id);
-			SystemLogger.error('dumm gelaufen', e);
+			SystemLogger.error(e);
 		}
 		SystemLogger.debug(`Smarti - New conversation with Id ${ conversation.id } created`);
 		return conversation;
@@ -462,8 +459,8 @@ export class SmartiAdapter {
 	static _updateMapping(roomId, conversationId) {
 
 		if (!roomId && !conversationId) {
-			SystemLogger.error('Smarti - Unable to update mapping roomId or conversationId undefined');
-			throw new Meteor.Error('Smarti - Unable to update mapping roomId or conversationId undefined');
+			const e = new Meteor.Error('Smarti - Unable to update mapping roomId or conversationId undefined');
+			SystemLogger.error(e);
 		}
 
 		RocketChat.models.LivechatExternalMessage.update(
@@ -485,5 +482,22 @@ export class SmartiAdapter {
 
 	static _clearMapping() {
 		RocketChat.models.LivechatExternalMessage.clear();
+	}
+
+	static _smartiAvailable() {
+		// if Smarti is not available stop immediately
+		const resp = SmartiProxy.propagateToSmarti(verbs.get, 'system/health', null, (error) => {
+			if (error.statusCode !== 200) {
+				const e = new Meteor.Error('Smarti not reachable!');
+				SystemLogger.error('Stop synchronizing with Smarti immediately:', e);
+				return false;
+			}
+		});
+		if ('UP' !== JSON.parse(resp).status) {
+			const e = new Meteor.Error('Smarti not healthy!');
+			SystemLogger.error('Stop synchronizing with Smarti immediately:', e);
+			return false;
+		}
+		return true;
 	}
 }
