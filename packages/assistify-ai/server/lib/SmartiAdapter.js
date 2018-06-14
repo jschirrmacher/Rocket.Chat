@@ -171,17 +171,7 @@ export class SmartiAdapter {
 			// cached conversation found
 			SystemLogger.debug(`Found cached conversation ${ cachedSmartiResult.conversationId } for room ${ roomId }`);
 			conversationId = cachedSmartiResult.conversationId;
-		}
-
-		/**
-		 * Since the Rocket.Chat legacy enpoint in Smarti, does not filter out deleted conversations
-		 * we can't rely on it. So use the Assistify.Chat Cache for now.
-		 *
-		 * See https://github.com/redlink-gmbh/smarti/issues/257
-		 * See https://github.com/redlink-gmbh/smarti/issues/259
-		 */
-
-		/* else {
+		} else {
 			// uncached conversation
 			SystemLogger.debug(`No cached Smarti conversation found for roomId: ${ roomId }, `);
 			SystemLogger.debug('Trying Smarti legacy service to retrieve conversation...');
@@ -201,7 +191,7 @@ export class SmartiAdapter {
 			} else {
 				SystemLogger.debug(`Smarti - no conversation found for room: ${ roomId }`);
 			}
-		} */
+		}
 		return conversationId;
 	}
 
@@ -248,10 +238,10 @@ export class SmartiAdapter {
 	static resync(ignoreSyncFlag) {
 		SystemLogger.info('Smarti resync triggered');
 
-		// Don't flush the cache if we do not use the legacy endpoint
-		/* if (ignoreSyncFlag) {
+		// flush the cache
+		if (ignoreSyncFlag) {
 			SmartiAdapter._clearMapping();
-		} */
+		}
 
 		let query = {};
 		if (!ignoreSyncFlag || ignoreSyncFlag !== true) {
