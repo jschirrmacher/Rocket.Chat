@@ -45,12 +45,9 @@ Meteor.methods({
 				}
 			}
 		)(verbs.get, `conversation/${ conversationId }/analysis`, null, (error) => {
-			if (error) {
-				// 404 is expected if no mapping exists
-				if (error.response && error.response.statusCode === 404) {
-					return null;
-				}
-				return {errorCode: error.code};
+			// 404 is expected if no mapping exists
+			if (error.response && error.response.statusCode === 404) {
+				return null;
 			}
 		});
 	},

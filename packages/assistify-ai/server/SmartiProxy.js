@@ -49,7 +49,7 @@ export class SmartiProxy {
 			}
 		} catch (error) {
 
-			if (onError) {
+			if (error && onError) {
 				const recoveryResult = onError(error);
 				if (recoveryResult !== undefined) {
 					return recoveryResult;
@@ -58,7 +58,7 @@ export class SmartiProxy {
 
 			SystemLogger.error('Could not complete', method, 'to', url, error.response);
 			SystemLogger.debug(error);
-			return false;
+			return {error};
 		}
 	}
 }
