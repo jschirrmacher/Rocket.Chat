@@ -225,11 +225,11 @@ class Assistify extends Page {
 		browser.keys(Keys.TAB);
 		browser.pause(300);
 
-		if (message) {
-			browser.pause(2000);
-			this.firstRequestMessage.waitForVisible(5000);
-			this.firstRequestMessage.setValue(message);
-		}
+		// if (message) {
+		// 	browser.pause(2000);
+		// 	this.firstRequestMessage.waitForVisible(5000);
+		// 	this.firstRequestMessage.setValue(message);
+		// }
 
 		browser.waitUntil(function() {
 			return browser.isEnabled('.create-channel__content [data-button="create"]');
@@ -237,7 +237,9 @@ class Assistify extends Page {
 
 		browser.pause(500);
 		this.saveTopicBtn.click();
-		browser.pause(10000);
+		browser.pause(1000);
+
+		this.sendTopicMessage(message);
 	}
 
 	sendTopicMessage(message) {
