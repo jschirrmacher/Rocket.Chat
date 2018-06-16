@@ -304,6 +304,8 @@ export class SmartiAdapter {
 				return true;
 			} else {
 				SystemLogger.debug('Messages out of sync: ', unsync.length);
+				// HACK: as we won't use the dirty flag for now, make sure the delta sync is not executed
+				return true;
 			}
 		}
 
