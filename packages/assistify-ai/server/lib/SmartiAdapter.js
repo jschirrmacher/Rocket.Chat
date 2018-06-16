@@ -31,8 +31,7 @@ export class SmartiAdapter {
 	static afterCreateChannel(rid) {
 		const room = RocketChat.models.Rooms.findOneById(rid);
 		SystemLogger.debug('Room created: ', room);
-		const conversationId = SmartiAdapter._createAndPostConversation(room).id;
-		SmartiAdapter._updateMapping(rid, conversationId);
+		SmartiAdapter._createAndPostConversation(room);
 	}
 
 	/**
@@ -215,7 +214,6 @@ export class SmartiAdapter {
 		}
 		SystemLogger.debug('Smarti - retieved analysis result =', JSON.stringify(analysisResult, null, 2));
 		SystemLogger.debug(`Smarti - analysis complete -> update cache and notify room [ ${ roomId } ] for conversation [ ${ conversationId } ]`);
-		SmartiAdapter._updateMapping(roomId, conversationId);
 		RocketChat.Notifications.notifyRoom(roomId, 'newConversationResult', analysisResult);
 	}
 
@@ -225,7 +223,6 @@ export class SmartiAdapter {
 	static _getAnalysisResult(roomId, conversationId) {
 
 		// conversation updated or created => request analysis results
-		SmartiAdapter._updateMapping(roomId, conversationId);
 		SystemLogger.debug(`Smarti - conversation updated or created -> get analysis result asynch [ callback=${ SmartiAdapter.rocketWebhookUrl } ] for conversation: ${ conversationId } and room: ${ roomId }`);
 		SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ conversationId }/analysis?callback=${ SmartiAdapter.rocketWebhookUrl }`); // asynch
 	}
@@ -327,8 +324,8 @@ export class SmartiAdapter {
 		const newSmartiConversation = SmartiAdapter._createAndPostConversation(room, messages);
 
 		// get the analysis result (synchronously), update the cache and notify rooms
-		const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
-		SmartiAdapter.analysisCompleted(rid, newSmartiConversation.id, analysisResult);
+		// const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
+		// SmartiAdapter.analysisCompleted(rid, newSmartiConversation.id, analysisResult);
 		SystemLogger.debug(`Smarti analysis completed for conversation ${ newSmartiConversation.id }`);
 
 		for (let i = 0; i < messages.length; i++) {
@@ -397,6 +394,7 @@ export class SmartiAdapter {
 			SystemLogger.error(e);
 		}
 		SystemLogger.debug(`Smarti - New conversation with Id ${ conversation.id } created`);
+		SmartiAdapter._updateMapping(room._id, conversation.id);
 		return conversation;
 	}
 
