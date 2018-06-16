@@ -1,6 +1,6 @@
 /* globals SystemLogger, RocketChat */
 
-import {SmartiProxy, verbs} from '../SmartiProxy';
+import { SmartiProxy, verbs } from '../SmartiProxy';
 
 /**
  * The SmartiAdpater can be understood as an interface for all interaction with Smarti triggered by Rocket.Chat server.
@@ -246,7 +246,7 @@ export class SmartiAdapter {
 
 		let query = {};
 		if (!ignoreSyncFlag || ignoreSyncFlag !== true) {
-			query = {$or: [{outOfSync: true}, {outOfSync: {$exists: false}}]};
+			query = { $or: [{ outOfSync: true }, { outOfSync: { $exists: false } }] };
 		}
 
 		query.t = 'r';
@@ -276,7 +276,17 @@ export class SmartiAdapter {
 	}
 
 	/**
-	 * Performs the synchronization for a singel room/conversation.
+	 * Performs the synchronization for a single room/conversation.
+	 *
+	 * @param {String} rid - the id of the room to sync
+	 * @param {boolean} ignoreSyncFlag @see resync(ignoreSyncFlag)
+	 */
+	static resyncRoom(rid, ignoreSyncFlag) {
+		Meteor.defer(() => SmartiAdapter._tryResync(rid, ignoreSyncFlag));
+	}
+
+	/**
+	 * Performs the synchronization for a single room/conversation.
 	 *
 	 * @param {String} rid - the id of the room to sync
 	 * @param {boolean} ignoreSyncFlag @see resync(ignoreSyncFlag)
@@ -307,20 +317,18 @@ export class SmartiAdapter {
 		// get the messages of the room and create a conversation from it
 		let messages;
 		if (room.closedAt) {
-			messages = RocketChat.models.Messages.find({rid, ts: {$lt: room.closedAt}, t:{$exists: false}}, { sort: { ts: 1 } }).fetch();
+			messages = RocketChat.models.Messages.find({ rid, ts: { $lt: room.closedAt }, t: { $exists: false } }, { sort: { ts: 1 } }).fetch();
 		} else {
-			messages = RocketChat.models.Messages.find({rid, t:{$exists: false}}, { sort: { ts: 1 } }).fetch();
+			messages = RocketChat.models.Messages.find({ rid, t: { $exists: false } }, { sort: { ts: 1 } }).fetch();
 		}
 		const newSmartiConversation = SmartiAdapter._createAndPostConversation(room, messages);
 
 		// get the analysis result (synchronously), update the cache and notify rooms
-		const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
-
-		SmartiAdapter.analysisCompleted(rid, newSmartiConversation.id, analysisResult);
+		// const analysisResult = SmartiProxy.propagateToSmarti(verbs.get, `conversation/${ newSmartiConversation.id }/analysis`);
+		// SmartiAdapter.analysisCompleted(rid, newSmartiConversation.id, analysisResult);
 		SystemLogger.debug(`Smarti analysis completed for conversation ${ newSmartiConversation.id }`);
 
-		// mark messages and room as synched
-		for (let i=0; i < messages.length; i++) {
+		for (let i = 0; i < messages.length; i++) {
 			Meteor.defer(() => SmartiAdapter._markMessageAsSynced(messages[i]._id));
 		}
 		SmartiAdapter._markRoomAsSynced(rid);
@@ -415,13 +423,23 @@ export class SmartiAdapter {
 		return supportArea;
 	}
 
+	/*
+		Commented the resync sstatus cache since this lead to issues
+		in the cache-sync of the base model:
+		It seems as if the updates performed interfere with updates to the same collection
+		triggered in Rooms.js(incMsgCountAndSetLastMessageById())
+		Todo: Find a non-concurrent way of caching the sync status
+	*/
 	static _markMessageAsSynced(messageId) {
+		SystemLogger.debug('_markMessageAsSynced', messageId);
+		/* Todo: Find a non-concurrent way of caching the sync status
+
 		const messageDB = RocketChat.models.Messages;
 		const message = messageDB.findOneById(messageId);
 		const lastUpdate = message ? message._updatedAt : 0;
 		if (lastUpdate) {
 			messageDB.model.update(
-				{_id: messageId},
+				{ _id: messageId },
 				{
 					$set: {
 						lastSync: lastUpdate
@@ -431,9 +449,12 @@ export class SmartiAdapter {
 		} else {
 			SystemLogger.debug('Message Id: ', messageId, ' can not be synced');
 		}
+		*/
 	}
 
 	static _markRoomAsSynced(rid) {
+		SystemLogger.debug('_markRoomAsSynced', rid);
+		/* Todo: Find a non-concurrent way of caching the sync status
 		RocketChat.models.Rooms.model.update(
 			{ _id: rid },
 			{
@@ -442,17 +463,21 @@ export class SmartiAdapter {
 				}
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is in sync');
+		*/
 	}
 
 	static _markRoomAsUnsynced(rid) {
+		SystemLogger.debug('_markRoomAsUnsynced', rid);
+		/* Todo: Find a non-concurrent way of caching the sync status
 		RocketChat.models.Rooms.model.update(
-			{_id: rid},
+			{ _id: rid },
 			{
 				$set: {
 					outOfSync: true
 				}
 			});
 		SystemLogger.debug('Room Id: ', rid, ' is out of sync');
+		*/
 	}
 
 	static _updateMapping(roomId, conversationId) {

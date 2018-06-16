@@ -4,6 +4,13 @@ import {SmartiAdapter} from '../lib/SmartiAdapter';
 
 Meteor.methods({
 
+	resyncRoom(rid, ignoreSyncFlag=true) {
+		if (!RocketChat.authz.hasRole(Meteor.userId(), 'admin')) {
+			throw new Meteor.Error(`SmartiResynch - triggerResync not permitted for user [ ${ Meteor.userId() } ]`);
+		}
+		SmartiAdapter.resyncRoom(rid, ignoreSyncFlag);
+	},
+
 	triggerResync() {
 		if (!RocketChat.authz.hasRole(Meteor.userId(), 'admin')) {
 			throw new Meteor.Error(`SmartiResynch - triggerResync not permitted for user [ ${ Meteor.userId() } ]`);
