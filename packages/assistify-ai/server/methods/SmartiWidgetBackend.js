@@ -44,7 +44,7 @@ Meteor.methods({
 					return !RocketChat.authz.hasPermission(userId, 'send-many-messages');
 				}
 			}
-		)(verbs.get, `conversation/${ conversationId }/analysis?callback=${ SmartiAdapter.rocketWebhookUrl }`, null, (error) => {
+		)(verbs.get, `conversation/${ conversationId }/analysis`, null, (error) => {
 			// 404 is expected if no mapping exists
 			if (error.response && error.response.statusCode === 404) {
 				return null;
