@@ -65,8 +65,7 @@
 }
 
 .smarti #widgetContainer #widgetWrapper #widgetFooter {
-	position: absolute;
-	bottom: 0;
+	position: relative;
 	background: #f4f4f4;
 	color: #747474;
 	opacity: 1;
