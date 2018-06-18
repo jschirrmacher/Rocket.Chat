@@ -42,119 +42,123 @@ function setTranslationPreferences(language) {
 }
 
 describe('[Auto Translate]', function() {
-	describe('[Admin User]', function() {
-		var language = ['EN', 'English' ];
-		before(() => {
-			checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
-		});
-		describe('[Translation Settings]', function() {
-			before(function() {
-				sideNav.sidebarMenu.click();
-				sideNav.popOverContent.click();
+	if (process.env.DEEPL_CONNECTION_KEY) {
+		describe('[Admin User]', function() {
+			var language = ['EN', 'English' ];
+			before(() => {
+				checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
 			});
-			describe('[Section: Message]', function() {
-				before(() => {
-					admin.messageLink.waitForVisible(5000);
-					admin.messageLink.click();
+			describe('[Translation Settings]', function() {
+				before(function() {
+					sideNav.sidebarMenu.click();
+					sideNav.popOverContent.click();
 				});
-				describe('[Settings: Auto translate]', function() {
+				describe('[Section: Message]', function() {
 					before(() => {
-						if (admin.messageButtonCollapseAutotranslate.isVisible()) {
-							admin.messageButtonCollapseAutotranslate.waitForVisible(10000);
-							admin.messageButtonCollapseAutotranslate.click();
-						}
-						admin.messageButtonExpandAutotranslate.click();
-						admin.messageButtonExpandGoogleMaps.click(); // Will make the auto translate section visible on the view port
+						admin.messageLink.waitForVisible(5000);
+						admin.messageLink.click();
 					});
-					it('enable auto translate', () => {
-						if (browser.isVisible('[name="AutoTranslate_Enabled"]')) {
-							admin.messageAutoTranslateEnable.click();
-						}
-						admin.messageAutoTranslateEnable.isSelected().should.equal(true);
-					});
-					it('select provider', () => {
-						if (admin.messageAutoTranslateEnable.isSelected() && admin.messageAutoTranslateProvider.isVisible()) {
-							admin.messageAutoTranslateProvider.click('option=DeepL');
+					describe('[Settings: Auto translate]', function() {
+						before(() => {
+							if (admin.messageButtonCollapseAutotranslate.isVisible()) {
+								admin.messageButtonCollapseAutotranslate.waitForVisible(10000);
+								admin.messageButtonCollapseAutotranslate.click();
+							}
+							admin.messageButtonExpandAutotranslate.click();
+							admin.messageButtonExpandGoogleMaps.click(); // Will make the auto translate section visible on the view port
+						});
+						it('enable auto translate', () => {
+							if (browser.isVisible('[name="AutoTranslate_Enabled"]')) {
+								admin.messageAutoTranslateEnable.click();
+							}
+							admin.messageAutoTranslateEnable.isSelected().should.equal(true);
+						});
+						it('select provider', () => {
+							if (admin.messageAutoTranslateEnable.isSelected() && admin.messageAutoTranslateProvider.isVisible()) {
+								admin.messageAutoTranslateProvider.click('option=DeepL');
+								browser.pause(1000);
+							}
+							admin.messageAutoTranslateProvider.getValue().should.equal('deepl-translate');
+						});
+						it('API Key', () => {
+							admin.messageAutoTranslateAPIKey.isVisible();
+							admin.messageAutoTranslateAPIKey.setValue(process.env.DEEPL_CONNECTION_KEY);
 							browser.pause(1000);
+							admin.messageAutoTranslateAPIKey.getValue().should.equal(process.env.DEEPL_CONNECTION_KEY);
+						});
+						it('save changes', () => {
+							browser.pause(1000);
+							if (admin.buttonSave.isEnabled()) {
+								admin.adminSaveChanges();
+							}
+						});
+					});
+				});
+				describe('[Set up Permissions]', function() {
+					before(() => {
+						admin.permissionsLink.isVisible();
+						admin.permissionsLink.click();
+					});
+					it('set permission for User to auto translate', () => {
+						if (!manageAutoTranslate.isSelected()) {
+							manageAutoTranslate.click();
+							browser.pause(3000);
 						}
-						admin.messageAutoTranslateProvider.getValue().should.equal('deepl-translate');
-					});
-					it('API Key', () => {
-						admin.messageAutoTranslateAPIKey.isVisible();
-						admin.messageAutoTranslateAPIKey.setValue(process.env.DEEPL_CONNECTION_KEY);
-						browser.pause(1000);
-						admin.messageAutoTranslateAPIKey.getValue().should.equal(process.env.DEEPL_CONNECTION_KEY);
-					});
-					it('save changes', () => {
-						browser.pause(1000);
-						if (admin.buttonSave.isEnabled()) {
-							admin.adminSaveChanges();
-						}
+						manageAutoTranslate.isSelected().should.equal(true);
 					});
 				});
-			});
-			describe('[Set up Permissions]', function() {
-				before(() => {
-					admin.permissionsLink.isVisible();
-					admin.permissionsLink.click();
+				after(() => {
+					console.log('Auto translate settings and permissions updated.');
+					sideNav.preferencesClose.waitForVisible(5000);
+					sideNav.preferencesClose.click();
 				});
-				it('set permission for User to auto translate', () => {
-					if (!manageAutoTranslate.isSelected()) {
-						manageAutoTranslate.click();
-						browser.pause(3000);
-					}
-					manageAutoTranslate.isSelected().should.equal(true);
-				});
-			});
-			after(() => {
-				console.log('Auto translate settings and permissions updated.');
-				sideNav.preferencesClose.waitForVisible(5000);
-				sideNav.preferencesClose.click();
-			});
-		});
-		describe('[Set up Room Translation Preferences]', function() {
-			before(() => {
-				sideNav.general.click();
-			});
-			setTranslationPreferences(language);
-		});
-	});
-	describe('[Translation User]', function() {
-		var language = ['DE', 'German'];
-		describe('[Create User]', function() {
-			before(() => {
-				// So now we create a new target user
-				checkIfUserIsValid(username, email, password);
 			});
 			describe('[Set up Room Translation Preferences]', function() {
 				before(() => {
 					sideNav.general.click();
 				});
 				setTranslationPreferences(language);
-				after(() => {
-					console.log('Room Preferences updated');
-				});
-			});
-			describe('[Send Message]', function() {
-				it('send a Message in Deutsch', () => {
-					sideNav.general.click();
-					mainContent.sendMessage(deutschMessage);
-					browser.pause(5000);
-				});
 			});
 		});
-	});
-	describe('[Back to Admin User]', function() {
-		before(() => {
-			checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
-			sideNav.general.click();
+		describe('[Translation User]', function() {
+			var language = ['DE', 'German'];
+			describe('[Create User]', function() {
+				before(() => {
+				// So now we create a new target user
+					checkIfUserIsValid(username, email, password);
+				});
+				describe('[Set up Room Translation Preferences]', function() {
+					before(() => {
+						sideNav.general.click();
+					});
+					setTranslationPreferences(language);
+					after(() => {
+						console.log('Room Preferences updated');
+					});
+				});
+				describe('[Send Message]', function() {
+					it('send a Message in Deutsch', () => {
+						sideNav.general.click();
+						mainContent.sendMessage(deutschMessage);
+						browser.pause(5000);
+					});
+				});
+			});
 		});
-		it('compare the last message', () => {
-			browser.pause(5000);
-			mainContent.waitForLastMessageEqualsText(englishMessage);
+		describe('[Back to Admin User]', function() {
+			before(() => {
+				checkIfUserIsAdmin(adminUsername, adminEmail, adminPassword);
+				sideNav.general.click();
+			});
+			it('compare the last message', () => {
+				browser.pause(5000);
+				mainContent.waitForLastMessageEqualsText(englishMessage);
+			});
+			after(() => {
+				console.log('Auto Translation Successful');
+			});
 		});
-		after(() => {
-			console.log('Auto Translation Successful');
-		});
-	});
+	} else {
+		it.skip("Skipping autotranslate tests - no API-key specified");
+	}
 });
