@@ -1,3 +1,7 @@
+# Assistify 0.63.3-0.8.2
+
+🐛 Don't pass the `room` to outgoing integrations - it can cause the server to break-down.
+
 # Assistify 0.63.3-0.8.1
 
 This release is a bugfix release 🐛
