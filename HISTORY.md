@@ -2,6 +2,15 @@
 
 This release updates the Rocket.Chat core to 0.65.2 bringing features and bugfixes.
 
+# Assistify 0.63.3-0.8.2
+
+🐛 Don't pass the `room` to outgoing integrations - it can cause the server to break-down.
+
+# Assistify 0.63.3-0.8.1
+
+This release is a bugfix release 🐛
+Particularly if you used outgoing and incoming integrations as a couple without any scripting in between, you may have noted some server side exceptions - which should now be gone.
+
 # Assistify 0.63.3-0.8.0
 
 This release brings new features 🎉 
@@ -2940,8 +2949,6 @@ This is a bug fix release. You may notice that your notification settings from a
 - [@sezinkarli](https://github.com/sezinkarli)
 - [@szluohua](https://github.com/szluohua)
 - [@tgxn](https://github.com/tgxn)
-<<<<<<< HEAD
-=======
 
 ### 👩‍💻👨‍💻 Core Team 🤓
 
@@ -2957,4 +2964,3 @@ This is a bug fix release. You may notice that your notification settings from a
 - [@mrsimpson](https://github.com/mrsimpson)
 - [@rodrigok](https://github.com/rodrigok)
 - [@sampaiodiego](https://github.com/sampaiodiego)
->>>>>>> 0.65.2
