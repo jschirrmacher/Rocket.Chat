@@ -100,6 +100,7 @@
 		"ddp": "^0.12.1",
 		"ddp-login": "^1.0.10",
 		"eslint": "^4.19.1",
+		"log-symbols": "^2.2.0",
 		"mocha": "^5.1.1",
 		"mock-require": "^3.0.2",
 		"postcss-custom-properties": "^7.0.0",
