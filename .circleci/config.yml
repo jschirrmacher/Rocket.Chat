@@ -298,7 +298,6 @@ jobs:
 
   publish-docker:
     <<: *defaults
-    timeout: 1200
     docker:
       - image: docker:17.05.0-ce-git
 
@@ -313,6 +312,7 @@ jobs:
       - run:
           command: docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
       - run:
+          no_output_timeout: 20m
           command: |
             if [[ ! -z $CI_PULL_REQUEST ]]
               then
