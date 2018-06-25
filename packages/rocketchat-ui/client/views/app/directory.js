@@ -12,22 +12,23 @@ function timeAgo(time) {
 }
 
 function directorySearch(config, cb) {
-	return Meteor.call('browseChannels', config, (err, results) => {
-		cb(results && results.length && results.map(result => {
-
-			if (config.type === 'users') {
-				return {
-					name: result.name,
-					username: result.username,
-					createdAt: timeAgo(result.createdAt)
-				};
-			} else {
+	return Meteor.call('browseChannels', config, (err, result) => {
+		cb(result.results && result.results.length && result.results.map(result => {
+			if (config.type !== 'users') {
 				return {
 					name: result.name,
 					users: result.usernames.length,
 					createdAt: timeAgo(result.ts),
 					description: result.description,
 					archived: result.archived
+				};
+			}
+
+			if (config.type === 'users') {
+				return {
+					name: result.name,
+					username: result.username,
+					createdAt: timeAgo(result.createdAt)
 				};
 			}
 		}));
