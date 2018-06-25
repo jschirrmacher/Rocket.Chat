@@ -19,7 +19,7 @@ export const UiTextContext = {
 };
 
 export class RoomTypeRouteConfig {
-	constructor({ name, path }) {
+	constructor({name, path}) {
 		if (typeof name !== 'undefined' && (typeof name !== 'string' || name.length === 0)) {
 			throw new Error('The name must be a string.');
 		}
@@ -193,6 +193,11 @@ export class RoomTypeConfig {
 	enableMembersListProfile() {
 		return false;
 	}
+
+	listInDirectory() {
+		return false; // default: not available for the directory search.
+	}
+
 
 	/**
 	 * Returns a text which can be used in generic UIs.

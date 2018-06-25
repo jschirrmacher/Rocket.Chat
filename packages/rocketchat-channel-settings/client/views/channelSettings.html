@@ -63,6 +63,7 @@
 		{{/unless}}
 
 		{{#with settings.t}}
+			{{#if canView}}
 			<div class="rc-user-info__row rc-user-info__row--separator">
 				<div class="rc-switch-double">
 					<div class="rc-switch-double__label {{equal false value 'disabled'}}">
@@ -88,6 +89,7 @@
 
 				</div>
 			</div>
+			{{/if}}
 		{{/with}}
 
 		{{#with settings.ro}}
@@ -130,7 +132,8 @@
 					</div>
 					<div class="rc-switch rc-switch--blue">
 						<label class="rc-switch__label">
-							<input type="checkbox" class="rc-switch__input js-input-check" name="reactWhenReadOnly" checked="{{checked}}" disabled="{{./disabled}}">
+							<input type="checkbox" class="rc-switch__input js-input-check" name="reactWhenReadOnly"
+								   checked="{{checked}}" disabled="{{./disabled}}">
 							<span class="rc-switch__button">
 								<span class="rc-switch__button-inside"></span>
 							</span>
@@ -161,9 +164,7 @@
 					</label>
 				</div>
 			</div>
-			{{/if}}
-		{{/with}}
-
+			{{/if}} {{/with}}
 		 {{#with settings.sysMes}}
 			{{#if canView}}
 				<div class="rc-user-info__row">
@@ -199,6 +200,26 @@
 			</div>
 			{{/if}}
 		{{/with}}
+		{{#with settings.secret}}
+			{{#if settings.t.showSecretSetting settings.secret}}
+				<div class="rc-user-info__row">
+					<div class="rc-switch rc-switch--blue">
+						<label class="rc-switch__label">
+							<span class="rc-switch__text">
+								{{_ label}}{{equal default value '*'}}
+							</span>
+							<input type="checkbox" class="rc-switch__input js-input-check" name="secret"
+								checked="{{checked}}"
+								disabled="{{disabled}}">
+							<span class="rc-switch__button">
+								<span class="rc-switch__button-inside"></span>
+							</span>
+						</label>
+						<div class="rc-switch-double__description">{{secretDescription}}</div>
+					</div>
+				</div>
+			{{/if}}
+		{{/with}}
 		{{#with settings.joinCode}}
 			<div class="rc-user-info__row">
 				<div class="rc-input">
@@ -215,12 +236,15 @@
 	<div class="rc-user-info__row">
 		<div class="rc-user-info__flex rc-user-info__row rc-user-info__row--separator">
 			<button class="rc-button js-cancel rc-button--outline" title="{{_ 'Cancel'}}">{{_ 'Cancel'}}</button>
-			<button class="rc-button rc-button--secondary js-reset" {{modified 'disabled'}} title="{{_ 'Reset'}}">{{_ 'Reset'}}</button>
-			<button class="rc-button rc-button--primary js-save" {{modified 'disabled'}} title="{{_ 'Save'}}">{{_ 'Save'}}</button>
+			<button class="rc-button rc-button--secondary js-reset" {{modified 'disabled'}} title="{{_ 'Reset'}}">{{_
+					'Reset'}}</button>
+			<button class="rc-button rc-button--primary js-save" {{modified 'disabled'}} title="{{_ 'Save'}}">{{_
+					'Save'}}</button>
 		</div>
 		<div class="rc-user-info__flex">
 			{{#if canDeleteRoom}}
-			<button class="rc-button rc-button--outline rc-button--cancel js-delete" title="{{_ 'Delete'}}">{{> icon icon='trash'}}{{_ 'Delete'}}</button>
+				<button class="rc-button rc-button--outline rc-button--cancel js-delete"
+						title="{{_ 'Delete'}}">{{> icon icon='trash'}}{{_ 'Delete'}}</button>
 			{{/if}}
 		</div>
 	</div>
@@ -279,13 +303,16 @@
 
 	<div class="rc-user-info__flex rc-user-info__row edit">
 		{{#if canEditRoom}}
-		<button class="rc-button rc-button--icon rc-button--outline js-edit" type="submit">{{> icon icon='edit'}}{{_ "Edit"}}</button>
+			<button class="rc-button rc-button--icon rc-button--outline js-edit" type="submit">{{> icon icon='edit'}}{{_
+					"Edit"}}</button>
 		{{/if}}
 	</div>
 	<div class="rc-user-info__flex rc-user-info__row">
-		<button class="rc-button rc-button--icon rc-button--outline js-hide" type="submit">{{> icon icon='eye-off'}}{{_ "Hide"}}</button>
+		<button class="rc-button rc-button--icon rc-button--outline js-hide" type="submit">{{> icon icon='eye-off'}}{{_
+				"Hide"}}</button>
 		{{#if canLeaveRoom}}
-		<button class="rc-button rc-button--icon rc-button--outline rc-button--cancel js-leave">{{> icon icon='sign-out'}}{{_ 'Leave'}}</button>
+			<button class="rc-button rc-button--icon rc-button--outline rc-button--cancel js-leave">{{> icon icon='sign-out'}}{{_
+					'Leave'}}</button>
 		{{/if}}
 	</div>
 	{{#if canDeleteRoom}}

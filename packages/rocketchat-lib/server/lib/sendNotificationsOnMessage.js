@@ -142,6 +142,27 @@ const sendNotification = ({
 	}
 };
 
+/**
+ * Detects the agents to be notified.
+ * This is essential for guest pool routing configuration.
+ * We'll only notify online agents.
+ * If the configuration allows to leave a message even if offline, the agents returning
+ * to the online status have to check the queue manually - which should be good practice
+	//
+ * @param {*} room The livechat room
+ */
+function getLivechatAgentIdsForRoom(room) {
+	const inquiry = RocketChat.models.LivechatInquiry.findOneByRoomId(room._id);
+	const department = inquiry ? inquiry.department : null;
+	let agentIds = [];
+	if (department) {
+		agentIds = RocketChat.models.LivechatDepartmentAgents.getOnlineForDepartment(department).fetch().map((agent) => agent.agentId);
+	} else {
+		agentIds = RocketChat.models.Users.findOnlineAgents().fetch().map((user) => user._id);
+	}
+	return agentIds;
+}
+
 function sendAllNotifications(message, room) {
 
 	// skips this callback if the message was edited
@@ -162,7 +183,12 @@ function sendAllNotifications(message, room) {
 		return message;
 	}
 
-	const mentionIds = (message.mentions || []).map(({_id}) => _id);
+	// provide a name for the livechat rooms in order to allow notifications
+	if (room.t === 'l' && !room.name) {
+		room.name = room.v.username;
+	}
+
+	const mentionIds = (message.mentions || []).map(({ _id }) => _id);
 	const mentionIdsWithoutGroups = mentionIds.filter((_id) => _id !== 'all' && _id !== 'here');
 	const hasMentionToAll = mentionIds.includes('all');
 	const hasMentionToHere = mentionIds.includes('here');
@@ -253,6 +279,35 @@ function sendAllNotifications(message, room) {
 					room,
 					mentionIds
 				});
+			});
+		});
+	}
+
+	/* for live chat rooms which are configured as guest pool, all agents
+		of the targeted department need to be notified
+		actually, livechat should be handled not inside the core-code, but
+		the current notification architecture does not allow some registration-mechanism
+	*/
+	if (room.t === 'l' && !room.servedBy) {
+		const agentIds = getLivechatAgentIdsForRoom(room);
+
+		agentIds.forEach((agentId) => {
+			sendNotification({
+				//fake a subscription in order to make use of the function defined above
+				subscription: {
+    				rid: room._id,
+   					t : room.t,
+					u: {
+						_id : agentId
+					}
+				},
+				sender: room.v,
+				hasMentionToAll: true, //sonsider all agents to be in the room
+				hasMentionToHere: false,
+				message,
+				notificationMessage,
+				room,
+				mentionIds: []
 			});
 		});
 	}

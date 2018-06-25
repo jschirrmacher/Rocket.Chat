@@ -78,6 +78,7 @@ Package.onUse(function(api) {
 	api.addFiles('client/views/fxos.html', 'client');
 	api.addFiles('client/views/modal.html', 'client');
 	api.addFiles('client/views/404/roomNotFound.html', 'client');
+	api.addFiles('client/views/404/privateNoPermission.html', 'client');
 	api.addFiles('client/views/404/invalidSecretURL.html', 'client');
 	api.addFiles('client/views/app/audioNotification.html', 'client');
 	api.addFiles('client/views/app/burger.html', 'client');
@@ -107,6 +108,7 @@ Package.onUse(function(api) {
 	api.addFiles('client/views/fxos.js', 'client');
 	api.addFiles('client/views/modal.js', 'client');
 	api.addFiles('client/views/404/roomNotFound.js', 'client');
+	api.addFiles('client/views/404/privateNoPermission.js', 'client');
 	api.addFiles('client/views/app/burger.js', 'client');
 	api.addFiles('client/views/app/createChannel.js', 'client');
 	api.addFiles('client/views/app/createRooms.js', 'client');

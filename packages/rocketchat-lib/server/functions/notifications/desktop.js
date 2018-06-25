@@ -34,7 +34,7 @@ export function notifyDesktopUser({
 	RocketChat.Notifications.notifyUser(userId, 'notification', {
 		title,
 		text,
-		duration,
+		duration: duration || RocketChat.settings.get('Accounts_Default_User_Preferences_desktopNotificationDuration'),
 		payload: {
 			_id: message._id,
 			rid: message.rid,
