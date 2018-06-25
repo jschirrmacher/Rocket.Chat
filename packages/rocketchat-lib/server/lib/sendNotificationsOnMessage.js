@@ -295,8 +295,8 @@ function sendAllNotifications(message, room) {
 			sendNotification({
 				//fake a subscription in order to make use of the function defined above
 				subscription: {
-    				rid: room._id,
-   					t : room.t,
+					rid: room._id,
+					t : room.t,
 					u: {
 						_id : agentId
 					}

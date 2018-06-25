@@ -214,7 +214,6 @@ Template.createChannel.events({
 		const name = e.target.name.value;
 		const type = instance.type.get();
 		const readOnly = instance.readOnly.get();
-		const broadcast = instance.broadcast.get();
 		const isPrivate = type === 'p';
 
 		if (instance.invalid.get() || instance.inUse.get()) {
