@@ -53,7 +53,13 @@ export class CreateRequestBase {
 		});
 	}
 	_postMessage(room, user, message, attachments) {
-		const newMessage = { _id: Random.id(), rid: room.rid, msg: message, attachments: attachments || [] };
+		attachments = attachments || [];
+
+		//sendMessage expects the attachments timestamp to be a string, => serialize it
+		attachments.forEach(attachment =>
+			attachment.ts = attachment.ts ? attachment.ts.toISOString() : ''
+		);
+		const newMessage = { _id: Random.id(), rid: room.rid, msg: message, attachments };
 		return RocketChat.sendMessage(user, newMessage, room);
 	}
 
