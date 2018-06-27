@@ -1,3 +1,4 @@
+/* globals RocketChat, SystemLogger */
 import _ from 'underscore';
 
 const fields = {
@@ -19,6 +20,7 @@ const fields = {
 	default: 1,
 	customFields: 1,
 	lastMessage: 1,
+	secret: 1,
 
 	// @TODO create an API to register this fields based on room type
 	livechatData: 1,
@@ -43,7 +45,7 @@ const roomMap = (record) => {
 	if (record._room) {
 		return _.pick(record._room, ...Object.keys(fields));
 	}
-	console.log('Empty Room for Subscription', record);
+	SystemLogger.log('Empty Room for Subscription', record);
 	return {};
 };
 

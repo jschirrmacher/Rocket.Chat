@@ -12,10 +12,12 @@ Package.onUse(function(api) {
 		'rocketchat:lib',
 		'rocketchat:lazy-load'
 	]);
-
 	api.addFiles('client/messageAttachment.html', 'client');
 	api.addFiles('client/messageAttachment.js', 'client');
-
+	api.addFiles('client/renderField.html', 'client');
+	api.addFiles('client/renderField.js', 'client');
+	api.addFiles('client/fieldTypeJoinRoomRequest.html', 'client');
+	api.addFiles('client/fieldTypeJoinRoomRequest.js', 'client');
 	// stylesheets
 	api.addFiles('client/stylesheets/messageAttachments.css', 'client');
 });

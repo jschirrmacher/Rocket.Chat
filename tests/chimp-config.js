@@ -19,7 +19,7 @@ module.exports = {
 // 	showXolvioMessages: true,
 
 // 	// - - - - CUCUMBER - - - -
-	path: 'tests/end-to-end',
+	path: 'tests/end-to-end/',
 	// 	format: 'pretty',
 	// 	tags: '~@ignore',
 	// 	singleSnippetPerFile: true,
@@ -48,19 +48,19 @@ module.exports = {
 	// 	// deviceName: null,
 
 	// 	// - - - - WEBDRIVER-IO  - - - -
-	// 	webdriverio: {
-	// 		desiredCapabilities: {},
-	// 		logLevel: 'silent',
-	// 		// logOutput: null,
-	// 		host: '127.0.0.1',
-	// 		port: 4444,
-	// 		path: '/wd/hub',
-	// 		baseUrl: null,
-	// 		coloredLogs: true,
-	// 		screenshotPath: null,
-	// 		waitforTimeout: 500,
-	// 		waitforInterval: 250,
-	// 	},
+	webdriverio: {
+		desiredCapabilities: {
+			'browserName': 'chrome',
+			'chromeOptions': {
+				'args': ['--lang=en-GB'],
+				'prefs': {
+					'intl': {
+						'accept_languages': 'en-GB'
+					}
+				}
+			}
+		}
+	},
 
 	// 	// - - - - SELENIUM-STANDALONE
 	// 	seleniumStandaloneOptions: {

@@ -47,7 +47,7 @@ Template.createChannel.helpers({
 	autocomplete(key) {
 		const instance = Template.instance();
 		const param = instance.ac[key];
-		return typeof param === 'function' ? param.apply(instance.ac): param;
+		return typeof param === 'function' ? param.apply(instance.ac) : param;
 	},
 	items() {
 		return Template.instance().ac.filteredList();
@@ -97,6 +97,9 @@ Template.createChannel.helpers({
 	},
 	roomTypeIsP() {
 		return Template.instance().type.get() === 'p';
+	},
+	secretDescription() {
+		return t(Template.instance().secret.get() ? t('Channel_will_be_hidden_in_the_directory_search') : t('Channel_will_be_show_in_the_directory_search'));
 	},
 	createIsDisabled() {
 		const instance = Template.instance();
@@ -164,6 +167,7 @@ Template.createChannel.events({
 	},
 	'change [name="type"]'(e, t) {
 		t.type.set(e.target.checked ? e.target.value : 'd');
+		t.secret.set(!e.target.checked);
 		t.change();
 	},
 	'change [name="broadcast"]'(e, t) {
@@ -172,6 +176,9 @@ Template.createChannel.events({
 	},
 	'change [name="readOnly"]'(e, t) {
 		t.readOnly.set(e.target.checked);
+	},
+	'change [name="secret"]'(e, t) {
+		t.secret.set(e.target.checked);
 	},
 	'input [name="users"]'(e, t) {
 		const input = e.target;
@@ -213,11 +220,13 @@ Template.createChannel.events({
 		if (!Object.keys(instance.extensions_validations).map(key => instance.extensions_validations[key]).reduce((valid, fn) => fn(instance) && valid, true)) {
 			return instance.extensions_invalid.set(true);
 		}
-
 		const extraData = Object.keys(instance.extensions_submits)
 			.reduce((result, key) => {
-				return { ...result, ...instance.extensions_submits[key](instance) };
-			}, {broadcast});
+				return {...result, ...instance.extensions_submits[key](instance)};
+			}, {
+				broadcast,
+				secret: instance.secret.get()
+			});
 
 		Meteor.call(isPrivate ? 'createPrivateGroup' : 'createChannel', name, instance.selectedUsers.get().map(user => user.username), readOnly, {}, extraData, function(err, result) {
 			if (err) {
@@ -231,10 +240,10 @@ Template.createChannel.events({
 			}
 
 			if (!isPrivate) {
-				RocketChat.callbacks.run('aftercreateCombined', { _id: result.rid, name: result.name });
+				RocketChat.callbacks.run('aftercreateCombined', {_id: result.rid, name: result.name});
 			}
 
-			return FlowRouter.go(isPrivate ? 'group' : 'channel', { name: result.name }, FlowRouter.current().queryParams);
+			return FlowRouter.go(isPrivate ? 'group' : 'channel', {name: result.name}, FlowRouter.current().queryParams);
 		});
 		return false;
 	}
@@ -256,7 +265,7 @@ Template.createChannel.onRendered(function() {
 Template.createChannel.onCreated(function() {
 	this.selectedUsers = new ReactiveVar([]);
 
-	const filter = {exceptions :[Meteor.user().username].concat(this.selectedUsers.get().map(u => u.username))};
+	const filter = {exceptions: [Meteor.user().username].concat(this.selectedUsers.get().map(u => u.username))};
 	// this.onViewRead:??y(function() {
 	Tracker.autorun(() => {
 		filter.exceptions = [Meteor.user().username].concat(this.selectedUsers.get().map(u => u.username));
@@ -267,6 +276,7 @@ Template.createChannel.onCreated(function() {
 	this.type = new ReactiveVar(RocketChat.authz.hasAllPermission(['create-p']) ? 'p' : 'c');
 	this.readOnly = new ReactiveVar(false);
 	this.broadcast = new ReactiveVar(false);
+	this.secret = new ReactiveVar(false);
 	this.inUse = new ReactiveVar(undefined);
 	this.invalid = new ReactiveVar(false);
 	this.extensions_invalid = new ReactiveVar(false);
@@ -299,7 +309,7 @@ Template.createChannel.onCreated(function() {
 
 	this.ac = new AutoComplete(
 		{
-			selector:{
+			selector: {
 				item: '.rc-popup-list__item',
 				container: '.rc-popup-list__list'
 			},
@@ -308,7 +318,7 @@ Template.createChannel.onCreated(function() {
 			inputDelay: 300,
 			rules: [
 				{
-				// @TODO maybe change this 'collection' and/or template
+					// @TODO maybe change this 'collection' and/or template
 					collection: 'UserAndRoom',
 					subscription: 'userAutocomplete',
 					field: 'username',
@@ -316,7 +326,7 @@ Template.createChannel.onCreated(function() {
 					filter,
 					doNotChangeWidth: false,
 					selector(match) {
-						return { term: match };
+						return {term: match};
 					},
 					sort: 'username'
 				}
