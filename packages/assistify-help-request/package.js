@@ -89,6 +89,7 @@ Package.onUse(function(api) {
 	api.addFiles('client/views/sideNav/listRequestsFlex.js', 'client');
 	api.addFiles('client/views/messageActions/AssistifyMessageAction.js', 'client');
 
+
 	//Libraries
 	api.addFiles('client/lib/collections.js', 'client');
 

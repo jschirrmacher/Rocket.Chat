@@ -119,6 +119,7 @@ RocketChat.Notifications = new class {
 
 RocketChat.Notifications.streamRoom.allowWrite(function(eventName, username, typing, extraData) {
 	const [roomId, e] = eventName.split('/');
+
 	if (e === 'webrtc') {
 		return true;
 	}
@@ -134,10 +135,11 @@ RocketChat.Notifications.streamRoom.allowWrite(function(eventName, username, typ
 
 		const user = Meteor.users.findOne(this.userId, {
 			fields: {
-				username: 1
+				username: 1,
+				name: 1
 			}
 		});
-		if (user != null && user.username === username) {
+		if (user != null && (user.username === username || (RocketChat.settings.get('UI_Use_Real_Name') && (user.name === username)))) {
 			return true;
 		}
 	}
