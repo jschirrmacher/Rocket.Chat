@@ -114,6 +114,7 @@ Template.livechatWindow.onCreated(function() {
 			}
 			Livechat.videoCall = result.videoCall;
 			Livechat.registrationForm = result.registrationForm;
+			Livechat.agentTypingAlias = result.agentTypingAlias;
 
 			if (result.room) {
 				Livechat.room = result.room._id;
