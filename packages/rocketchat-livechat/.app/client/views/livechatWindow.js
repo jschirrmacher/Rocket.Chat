@@ -4,7 +4,7 @@ import visitor from '../../imports/client/visitor';
 function showDepartments() {
 	return Department.find({ showOnRegistration: true }).count() > 1;
 };
- 
+
 Template.livechatWindow.helpers({
 	title() {
 		return Livechat.title;
@@ -121,6 +121,8 @@ Template.livechatWindow.onCreated(function() {
 			Livechat.registrationForm = result.registrationForm;
 			Livechat.nameFieldRegistrationForm = result.nameFieldRegistrationForm;
 			Livechat.emailFieldRegistrationForm = result.emailFieldRegistrationForm;
+			Livechat.agentTypingAlias = result.agentTypingAlias;
+
 			if (result.room) {
 				Livechat.room = result.room._id;
 

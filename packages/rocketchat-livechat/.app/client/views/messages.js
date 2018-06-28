@@ -1,4 +1,4 @@
-/* globals Livechat, LivechatVideoCall, MsgTyping */
+/* globals Livechat, LivechatVideoCall, MsgTyping, RocketChat */
 import visitor from '../../imports/client/visitor';
 import _ from 'underscore';
 
@@ -60,6 +60,9 @@ Template.messages.helpers({
 			selfTyping: MsgTyping.selfTyping.get(),
 			users: usernames.join(` ${ t('and') } `)
 		};
+	},
+	typingAlias(users){
+		return Template.instance().agentTypingAlias.get() || users
 	},
 	agentData() {
 		const agent = Livechat.agent;
@@ -134,6 +137,7 @@ Template.messages.events({
 });
 
 Template.messages.onCreated(function() {
+	this.agentTypingAlias = new ReactiveVar(Livechat.agentTypingAlias);
 	this.atBottom = true;
 
 	this.showOptions = new ReactiveVar(false);

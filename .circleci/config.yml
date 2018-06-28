@@ -322,6 +322,7 @@ jobs:
 
   publish-docker:
     <<: *defaults
+    timeout: 1200
     docker:
       - image: docker:17.05.0-ce-git
 
