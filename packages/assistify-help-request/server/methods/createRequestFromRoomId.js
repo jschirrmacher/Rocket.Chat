@@ -64,7 +64,7 @@ export class CreateRequestFromRoomId extends CreateRequestBase {
 				roomCreated,
 				msgAuthor,
 				this._openingQuestion.msg,
-				this._openingQuestion.attachments.filter(attachment => attachment.type && attachment.type === 'file')
+				this._openingQuestion.attachments ? this._openingQuestion.attachments.filter(attachment => attachment.type && attachment.type === 'file') : []
 			);
 
 			if (msgRePosted) {
