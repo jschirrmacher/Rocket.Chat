@@ -13,11 +13,12 @@ const removeObsoleteSubscriptions = function() {
 				'localField': 'u._id',
 				'foreignField': '_id',
 				'as': 'users'
-			}},
-		{ '$match': { 'users._id': { '$exists': false } } }
+			}
+		},
+		{'$match': {'users._id': {'$exists': false}}}
 	]).forEach(function(errSubscription) {
 		// we can bypass the cached collection as this will affect obsolete values
-		RocketChat.models.Subscriptions.model.remove({ _id: errSubscription._id.toString() });
+		RocketChat.models.Subscriptions.model.remove({_id: errSubscription._id.toString()});
 		counter++;
 	});
 	return counter;
@@ -27,5 +28,18 @@ Meteor.startup(() => {
 	const count = removeObsoleteSubscriptions();
 	if (count) {
 		console.log('Removed', count, 'erroneous subscriptions');
+	}
+	const updated = RocketChat.models.Rooms.update({
+		t: 'p',
+		secret: {
+			$exists: false
+		}
+	}, {
+		$set: {
+			secret: true
+		}
+	});
+	if (updated) {
+		console.log('Migrated', updated, 'Private Room(s) Privacy is set to secret');
 	}
 });

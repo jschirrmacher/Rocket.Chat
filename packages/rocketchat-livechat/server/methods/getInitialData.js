@@ -20,7 +20,8 @@ Meteor.methods({
 			offlineSuccessMessage: null,
 			offlineUnavailableMessage: null,
 			displayOfflineForm: null,
-			videoCall: null
+			videoCall: null,
+			agentTypingAlias: ''
 		};
 
 		const room = RocketChat.models.Rooms.findOpenByVisitorToken(visitorToken, {
@@ -69,6 +70,7 @@ Meteor.methods({
 		info.transcriptMessage = initSettings.Livechat_transcript_message;
 
 		info.agentData = room && room[0] && room[0].servedBy && RocketChat.models.Users.getAgentInfo(room[0].servedBy._id);
+		info.agentTypingAlias = initSettings.Livechat_agent_typing_alias;
 
 		RocketChat.models.LivechatTrigger.findEnabled().forEach((trigger) => {
 			info.triggers.push(_.pick(trigger, '_id', 'actions', 'conditions'));

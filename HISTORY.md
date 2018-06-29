@@ -1,3 +1,13 @@
+# Assistify 0.63.3-0.8.3
+
+This is to be considered a bugfix release 🐛 with some important improvements :tada: .
+
+It majorly 
+
+- allow to browse private groups and request access (fixing #295)
+- allows livechat-admins to configure a name which is used in the typing-indication
+- fixes notification-issues
+
 # Assistify 0.63.3-0.8.2
 
 🐛 Don't pass the `room` to outgoing integrations - it can cause the server to break-down.

@@ -75,9 +75,11 @@ RocketChat.sendMessage = function(user, message, room, upsert = false) {
 			message._id = RocketChat.models.Messages.insert(message);
 		}
 
+		/* Temporary Fix: Deactivate App here, since we experienced issues on startup with multi-instances
 		if (Apps && Apps.isLoaded()) {
 			Apps.getBridges().getListenerBridge().messageEvent('IPostMessageSent', message);
 		}
+		*/
 
 		/*
 		Defer other updates as their return is not interesting to the user

@@ -149,6 +149,7 @@ Template.AssistifyCreateRequest.helpers({
 			//setCanvas: getCanvas
 		};
 	}
+
 });
 
 Template.AssistifyCreateRequest.events({
@@ -157,8 +158,7 @@ Template.AssistifyCreateRequest.events({
 		const input = e.target;
 		const position = input.selectionEnd || input.selectionStart;
 		const length = input.value.length;
-		document.activeElement === input && e && /input/i.test(e.type) && (input.selectionEnd = position + input.value.length - length);
-		t.expertise.set(input.value);
+		document.activeElement === input && e && /input/i.test(e.type) && (input.selectionEnd = position + input.value.length - length);t.expertise.set(input.value);
 		t.validExpertise.set(false);
 		t.expertiseError.set('');
 	},
