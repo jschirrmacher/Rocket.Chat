@@ -33,10 +33,6 @@ const sendNotification = ({
 		return;
 	}
 
-	let title = UI_Use_Real_Name && user.name ? user.name : `@${ user.username }`;
-	if (room.t !== 'd' && room.name) {
-		title += ` @ #${ room.name }`;
-
 	const hasMentionToUser = mentionIds.includes(subscription.u._id);
 
 	// mute group notifications (@here and @all) if not directly mentioned as well
