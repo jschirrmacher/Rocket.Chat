@@ -21,6 +21,25 @@ const removeObsoleteSubscriptions = function() {
 		RocketChat.models.Subscriptions.model.remove({_id: errSubscription._id.toString()});
 		counter++;
 	});
+
+	RocketChat.models.Subscriptions.model.aggregate([
+		{
+			$lookup: {
+				'from': 'rocketchat_room',
+				'localField': 'rid',
+				'foreignField': '_id',
+				'as': 'rooms'
+			}
+		},
+		{
+			'$match': {'rooms.0': { '$exists': false }}
+		}
+	]).forEach(function(errSubscription) {
+		// we can bypass the cached collection as this will affect obsolete values
+		RocketChat.models.Subscriptions.model.remove({_id: errSubscription._id.toString()});
+		counter++;
+	});
+
 	return counter;
 };
 
@@ -34,10 +53,14 @@ Meteor.startup(() => {
 		secret: {
 			$exists: false
 		}
-	}, {
+	},
+	{
 		$set: {
 			secret: true
 		}
+	},
+	{
+		multi: true
 	});
 	if (updated) {
 		console.log('Migrated', updated, 'Private Room(s) Privacy is set to secret');
