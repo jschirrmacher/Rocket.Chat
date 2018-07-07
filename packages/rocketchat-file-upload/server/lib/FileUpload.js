@@ -92,11 +92,15 @@ Object.assign(FileUpload, {
 		// Get metadata to resize the image the first time to keep "inside" the dimensions
 		// then resize again to create the canvas around
 		s.metadata(Meteor.bindEnvironment((err, metadata) => {
-			s.toFormat(sharp.format.jpeg)
-				.resize(Math.min(height, metadata.width), Math.min(height, metadata.height))
+			if (!metadata) {
+				metadata = {};
+			}
+
+			s.toFormat(sharp.format.png)
+				.resize(Math.min(height || 0, metadata.width || Infinity), Math.min(height || 0, metadata.height || Infinity))
 				.pipe(sharp()
 					.resize(height, height)
-					.background('#FFFFFF')
+					.background({ r: 0, g: 0, b: 0, alpha: 0 })
 					.embed()
 				)
 				// Use buffer to get the result in memory then replace the existing file
