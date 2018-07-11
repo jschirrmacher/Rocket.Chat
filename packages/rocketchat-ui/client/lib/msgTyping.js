@@ -10,10 +10,7 @@ export const MsgTyping = (function() {
 	const dep = new Tracker.Dependency;
 
 	const shownName = function(user) {
-		if (RocketChat.settings.get('UI_Use_Real_Name')) {
-			return user && user.name;
-		}
-		return user && user.username;
+		return RocketChat.settings.get('UI_Use_Real_Name') && user.name ? user.name || user.username : user.username;
 	};
 
 	const addStream = function(room) {
