@@ -1,4 +1,5 @@
 import { RocketChat } from 'meteor/rocketchat:lib';
+import { SystemLogger } from 'meteor/rocketchat:logger';
 
 export class CreateRequestBase {
 	constructor(openingQuestion) {
@@ -33,9 +34,20 @@ export class CreateRequestBase {
 			const user = RocketChat.models.Users.findOneByUsername(username);
 			let subscription = RocketChat.models.Subscriptions.findOneByRoomIdAndUserId(requestId, user._id);
 			if (!subscription) {
-				subscription = RocketChat.models.Subscriptions.createWithRoomAndUser(request, user);
+				try {
+					subscription = RocketChat.models.Subscriptions.createWithRoomAndUser(request, user);
+				} catch (e) {
+					// In some cases, particularly in mongo-replicasets in combination with caching (it seems)
+					// the notification has already been create and a duplicate key index violation is thrown
+					// => Consider it already done once the create of the subscription fails
+					SystemLogger.info('Subscription for created room could not be created explicitly', e);
+					subscription = RocketChat.models.Subscriptions.findOneByRoomIdAndUserId(requestId, user._id);
+				}
 			}
-
+			if (!subscription) {
+				SystemLogger.warn('No subscription found for created request', request._id, 'user', user._id);
+				return;
+			}
 			if (expertise) {
 				const expertiseSubscription = RocketChat.models.Subscriptions.findOneByRoomIdAndUserId(expertise._id, user._id);
 				if (expertiseSubscription) {
@@ -68,5 +80,3 @@ export class CreateRequestBase {
 	}
 
 }
-
-
