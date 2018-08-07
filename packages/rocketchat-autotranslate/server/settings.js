@@ -16,7 +16,7 @@ Meteor.startup(function() {
 			key: 'deepl-translate',
 			i18nLabel: 'AutoTranslate_DeepL'
 		}, {
-			key: 'DBS-translate',
+			key: 'dbs-translate',
 			i18nLabel: 'AutoTranslate_DBS'
 		}],
 		enableQuery: [{_id: 'AutoTranslate_Enabled', value: true}],
