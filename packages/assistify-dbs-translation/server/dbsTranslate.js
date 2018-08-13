@@ -7,7 +7,7 @@ import {TranslationProviderRegistry, AutoTranslate} from 'meteor/rocketchat:auto
 import {RocketChat} from 'meteor/rocketchat:lib';
 import {SystemLogger} from 'meteor/rocketchat:logger';
 import _ from 'underscore';
-import cld from 'cld';
+const cld = Npm.require('cld');
 
 /**
  * Intergrate DBS Business Hub translate API provider
@@ -22,7 +22,14 @@ class DBSAutoTranslate extends AutoTranslate {
 	constructor() {
 		super();
 		this.name = 'dbs-translate';
-		this.apiEndPointUrl = 'https://gateway.hub.ose.db.de/translation-text/v1';
+		// get the service provider url from settings.
+		RocketChat.settings.get('AutoTranslate_ServiceProviderURL', (key, value) => {
+			if (this.name === value) {
+				this.apiEndPointUrl = value;
+			} else {
+				this.apiEndPointUrl = null;
+			}
+		});
 		// self register & de-register callback - afterSaveMessage based on the activeProvider
 		RocketChat.settings.get('AutoTranslate_ServiceProvider', (key, value) => {
 			if (this.name === value) {
@@ -131,12 +138,14 @@ class DBSAutoTranslate extends AutoTranslate {
 		const msgs = message.msg.split('\n');
 		const query = msgs.join();
 		let sourceLanguage;
-		//Since the translation provider do not handle the source language detection,
-		//we must handle explicitly say the source language
-		//We use language detection api to do it.
+		/**
+		 * Service provider do not handle the text language detection automatically rather it requires the source language to be specified
+		 * explicitly. To automate this language detection process we used the cld language detector.
+		 * When the language detector fails, it falls back into the user language.
+		 */
 		cld.detect(query, (err, result) => {
 			result.languages.map((language) => {
-				sourceLanguage = language.code || RocketChat.settings.get('Language') || 'en';
+				sourceLanguage = language.code || RocketChat.settings.get('Language'); // fallback to user language.
 			});
 		});
 		const supportedLanguages = this._getSupportedLanguages('en');

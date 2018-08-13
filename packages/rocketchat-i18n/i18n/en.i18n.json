@@ -336,6 +336,8 @@
   "AutoTranslate_Enabled": "Enable Auto-Translate",
   "AutoTranslate_Google": "Google",
   "AutoTranslate_GoogleAPIKey": "Google API Key",
+  "AutoTranslate_ServiceProvider": "Service Provider",
+  "AutoTranslate_ServiceProviderURL":"Service Provider url",
   "Available": "Available",
   "Available_agents": "Available agents",
   "Avatar": "Avatar",

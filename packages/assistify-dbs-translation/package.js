@@ -17,3 +17,7 @@ Package.onUse(function(api) {
 	api.addFiles('server/dbsTranslate.js', 'server');
 });
 
+Npm.depends({
+	cld: '2.4.8'
+});
+

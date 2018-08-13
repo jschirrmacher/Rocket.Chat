@@ -361,6 +361,7 @@
   "AutoTranslate_Google": "Google",
   "AutoTranslate_GoogleAPIKey": "Google API-Schlüssel",
   "AutoTranslate_ServiceProvider": "Übersetzungsdienst",
+  "AutoTranslate_ServiceProviderURL": "Übersetzungsdienst url",
   "Available_agents": "Verfügbare Agenten",
   "Available": "Verfügbar",
   "Avatar_changed_successfully": "Das Profilbild wurde erfolgreich geändert.",
