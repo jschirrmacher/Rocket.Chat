@@ -7,7 +7,7 @@ import {TranslationProviderRegistry, AutoTranslate} from 'meteor/rocketchat:auto
 import {RocketChat} from 'meteor/rocketchat:lib';
 import {SystemLogger} from 'meteor/rocketchat:logger';
 import _ from 'underscore';
-const cld = Npm.require('cld');
+const cld = Npm.require('cld'); // import the local package dependencies
 
 /**
  * Intergrate DBS Business Hub translate API provider
@@ -24,11 +24,7 @@ class DBSAutoTranslate extends AutoTranslate {
 		this.name = 'dbs-translate';
 		// get the service provider url from settings.
 		RocketChat.settings.get('AutoTranslate_ServiceProviderURL', (key, value) => {
-			if (this.name === value) {
-				this.apiEndPointUrl = value;
-			} else {
-				this.apiEndPointUrl = null;
-			}
+			this.apiEndPointUrl = value;
 		});
 		// self register & de-register callback - afterSaveMessage based on the activeProvider
 		RocketChat.settings.get('AutoTranslate_ServiceProvider', (key, value) => {
