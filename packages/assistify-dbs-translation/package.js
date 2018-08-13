@@ -11,6 +11,7 @@ Package.onUse(function(api) {
 	api.use('ecmascript');
 	api.mainModule('dbs-translation.js');
 	api.addFiles('server/dbsTranslate.js', 'server');
+	api.addFiles('server/methods/translate.js', 'server');
 });
 
 /**

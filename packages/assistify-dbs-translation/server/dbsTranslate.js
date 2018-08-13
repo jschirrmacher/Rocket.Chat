@@ -3,9 +3,9 @@
  */
 
 
-import {TranslationProviderRegistry, AutoTranslate} from 'meteor/rocketchat:autotranslate';
-import {RocketChat} from 'meteor/rocketchat:lib';
-import {SystemLogger} from 'meteor/rocketchat:logger';
+import { TranslationProviderRegistry, AutoTranslate } from 'meteor/rocketchat:autotranslate';
+import { RocketChat } from 'meteor/rocketchat:lib';
+import { SystemLogger } from 'meteor/rocketchat:logger';
 import _ from 'underscore';
 const cld = Npm.require('cld'); // import the local package dependencies
 
@@ -75,47 +75,47 @@ class DBSAutoTranslate extends AutoTranslate {
 			return this.supportedLanguages[target] = [
 				{
 					'language': 'de',
-					'name': TAPi18n.__('German', {lng: target})
+					'name': TAPi18n.__('German', { lng: target })
 				},
 				{
 					'language': 'en',
-					'name': TAPi18n.__('English', {lng: target})
+					'name': TAPi18n.__('English', { lng: target })
 				},
 				{
 					'language': 'fr',
-					'name': TAPi18n.__('French', {lng: target})
+					'name': TAPi18n.__('French', { lng: target })
 				},
 				{
 					'language': 'es',
-					'name': TAPi18n.__('Spanish', {lng: target})
+					'name': TAPi18n.__('Spanish', { lng: target })
 				},
 				{
 					'language': 'it',
-					'name': TAPi18n.__('Italian', {lng: target})
+					'name': TAPi18n.__('Italian', { lng: target })
 				},
 				{
 					'language': 'nl',
-					'name': TAPi18n.__('Dutch', {lng: target})
+					'name': TAPi18n.__('Dutch', { lng: target })
 				},
 				{
 					'language': 'pl',
-					'name': TAPi18n.__('Polish', {lng: target})
+					'name': TAPi18n.__('Polish', { lng: target })
 				},
 				{
 					'language': 'ro',
-					'name': TAPi18n.__('Romanian', {lng: target})
+					'name': TAPi18n.__('Romanian', { lng: target })
 				},
 				{
 					'language': 'sk',
-					'name': TAPi18n.__('Slovak', {lng: target})
+					'name': TAPi18n.__('Slovak', { lng: target })
 				},
 				{
 					'language': 'ja',
-					'name': TAPi18n.__('Japanese', {lng: target})
+					'name': TAPi18n.__('Japanese', { lng: target })
 				},
 				{
 					'language': 'zh',
-					'name': TAPi18n.__('Chinese', {lng: target})
+					'name': TAPi18n.__('Chinese', { lng: target })
 				}
 			];
 		}
@@ -146,45 +146,44 @@ class DBSAutoTranslate extends AutoTranslate {
 		});
 		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
-			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
 				language = language.substr(0, 2);
 			}
-			try {
-				const result = HTTP.call('POST', `${ this.apiEndPointUrl }/translate`, {
-					params: {
-						key: this.apiKey
-					}, data: {
-						text: query,
-						to: language,
-						from: sourceLanguage
-					}
-				});
-
-				if (result.statusCode === 200 && result.data && result.data.translation && result.data.translation.length > 0) {
-					const txt = decodeURIComponent(result.data.translation);
-					translations[language] = this.deTokenize(Object.assign({}, message, {msg: txt}));
+			Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
+				params: {
+					key: this.apiKey
+				}, data: {
+					text: query,
+					to: language,
+					from: sourceLanguage
 				}
-			} catch (e) {
-				SystemLogger.error('Error translating message', e);
-			}
+			}, (err, result) => {
+				if (result) {
+					translations[language] = this.deTokenize(Object.assign({}, message, { msg: result }));
+				} else {
+					SystemLogger.error('Error translating message', err);
+				}
+			});
 		});
 		return translations;
 	}
 
 	/**
-	 * Returns translated message attachment description in target languages.
-	 * @private
-	 * @param {object} attachment
-	 * @param {object} targetLanguages
-	 * @returns {object} translated messages for each target language
-	 */
+ 	  * Returns translated message attachment description in target languages.
+ 	  * @private
+ 	  * @param {object} attachment
+ 	  * @param {object} targetLanguages
+ 	  * @returns {object} translated messages for each target language
+ 	  */
 	_sendRequestTranslateMessageAttachments(attachment, targetLanguages) {
 		const translations = {};
 		const query = attachment.description || attachment.text;
 		let sourceLanguage;
-		//Since the translation provider do not handle the source language detection,
-		//we must handle explicitly say the source language
-		//We use language detection api to do it.
+		/**
+		 * Service provider do not handle the text language detection automatically rather it requires the source language to be specified
+		 * explicitly. To automate this language detection process we used the cld language detector.
+		 * When the language detector fails, it falls back into the user language.
+		 */
 		cld.detect(query, (err, result) => {
 			result.languages.map((language) => {
 				sourceLanguage = language.code || RocketChat.settings.get('Language') || 'en';
@@ -192,26 +191,24 @@ class DBSAutoTranslate extends AutoTranslate {
 		});
 		const supportedLanguages = this._getSupportedLanguages('en');
 		targetLanguages.forEach(language => {
-			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, {language})) {
+			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
 				language = language.substr(0, 2);
 			}
-			try {
-				const result = HTTP.call('POST', `${ this.apiEndPointUrl }/translate`, {
-					params: {
-						key: this.apiKey
-					}, data: {
-						text: query,
-						to: language,
-						from: sourceLanguage
-					}
-				});
-				if (result.statusCode === 200 && result.data && result.data.translation && result.data.translation.length > 0) {
-					const txt = decodeURIComponent(result.data.translation);
-					translations[language] = txt;
+			Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
+				params: {
+					key: this.apiKey
+				}, data: {
+					text: query,
+					to: language,
+					from: sourceLanguage
 				}
-			} catch (e) {
-				SystemLogger.error('Error translating message attachment', e);
-			}
+			}, (err, result) => {
+				if (result) {
+					translations[language] = result;
+				} else {
+					SystemLogger.error('Error translating message', err);
+				}
+			});
 		});
 		return translations;
 	}
