@@ -28,6 +28,9 @@ jobs:
         path: github/.concourse/install.sh
 
 - name: test
+  public: true
+  plan:
+  
   - task: lint
     config:
       platform: linux
