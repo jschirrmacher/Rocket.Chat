@@ -2,15 +2,14 @@
  * @author Vigneshwaran Odayappan <vickyokrm@gmail.com>
  */
 
-
 import { TranslationProviderRegistry, AutoTranslate } from 'meteor/rocketchat:autotranslate';
 import { RocketChat } from 'meteor/rocketchat:lib';
-import { SystemLogger } from 'meteor/rocketchat:logger';
+//import { SystemLogger } from 'meteor/rocketchat:logger';
 import _ from 'underscore';
 const cld = Npm.require('cld'); // import the local package dependencies
 
 /**
- * Intergrate DBS Business Hub translate API provider
+ * Intergrate DBS translation service
  * @class
  * @augments AutoTranslate
  */
@@ -149,7 +148,7 @@ class DBSAutoTranslate extends AutoTranslate {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
 				language = language.substr(0, 2);
 			}
-			Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
+			const result = Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
 				params: {
 					key: this.apiKey
 				}, data: {
@@ -157,13 +156,8 @@ class DBSAutoTranslate extends AutoTranslate {
 					to: language,
 					from: sourceLanguage
 				}
-			}, (err, result) => {
-				if (result) {
-					translations[language] = this.deTokenize(Object.assign({}, message, { msg: result }));
-				} else {
-					SystemLogger.error('Error translating message', err);
-				}
 			});
+			translations[language] = this.deTokenize(Object.assign({}, message, { msg: result }));
 		});
 		return translations;
 	}
@@ -186,7 +180,7 @@ class DBSAutoTranslate extends AutoTranslate {
 		 */
 		cld.detect(query, (err, result) => {
 			result.languages.map((language) => {
-				sourceLanguage = language.code || RocketChat.settings.get('Language') || 'en';
+				sourceLanguage = language.code || RocketChat.settings.get('Language'); // fallback to user language.
 			});
 		});
 		const supportedLanguages = this._getSupportedLanguages('en');
@@ -194,19 +188,13 @@ class DBSAutoTranslate extends AutoTranslate {
 			if (language.indexOf('-') !== -1 && !_.findWhere(supportedLanguages, { language })) {
 				language = language.substr(0, 2);
 			}
-			Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
+			translations[language] = Meteor.call('assistify.translate', 'POST', `${ this.apiEndPointUrl }/translate`, {
 				params: {
 					key: this.apiKey
 				}, data: {
 					text: query,
 					to: language,
 					from: sourceLanguage
-				}
-			}, (err, result) => {
-				if (result) {
-					translations[language] = result;
-				} else {
-					SystemLogger.error('Error translating message', err);
 				}
 			});
 		});

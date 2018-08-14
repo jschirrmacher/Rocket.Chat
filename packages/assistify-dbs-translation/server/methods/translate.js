@@ -1,4 +1,3 @@
-import { SystemLogger } from 'meteor/rocketchat:logger';
 
 Meteor.methods({
 	'assistify.translate'(httpMethod, url, params, data) {
@@ -8,7 +7,7 @@ Meteor.methods({
 				return decodeURIComponent(result.data.translation);
 			}
 		} catch (e) {
-			SystemLogger.error('Error translating message attachment', e);
+			throw new Meteor.Error('translation-failed', 'Auto-Translate is not allowed', e);
 		}
 	}
 });
