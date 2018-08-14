@@ -1,6 +1,5 @@
 #!/bin/sh
 
-set -x
 set +e
 METEOR_SYMLINK_TARGET=$(readlink ~/.meteor/meteor)
 METEOR_TOOL_DIRECTORY=$(dirname "$METEOR_SYMLINK_TARGET")
@@ -16,3 +15,14 @@ fi
 
 # only install meteor if bin isn't found
 command -v meteor >/dev/null 2>&1 || curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh
+
+npm --versions
+node -v
+meteor --version
+meteor npm --versions
+meteor node -v
+git version
+
+meteor npm install
+
+git submodule init && git submodule update

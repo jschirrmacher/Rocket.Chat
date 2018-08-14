@@ -7,31 +7,56 @@ resources:
     branch: develop
 
 jobs:
-- name: rocketchat
+- name: build
   public: true
   plan:
 
   - get: github
     trigger: true
 
-  - task: install-meteor
+  - task: install
     config:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: byrnedo/alpine-curl}
+        source: {repository: node/carbon}
       inputs:
         - name: github
+      outputs:
+        - name: installed
       run:
-        path: github/.concourse/install-meteor.sh
+        path: github/.concourse/install.sh
 
-  - task: show-versions
+- name: test
+  - task: lint
     config:
       platform: linux
       image_resource:
         type: docker-image
         source: {repository: alpine}
       inputs:
-        - name: github
+        - name: installed
       run:
-        path: github/.concourse/show-versions.sh
+        path: meteor npm run lint
+
+  - task: stylelint
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: alpine}
+      inputs:
+        - name: installed
+      run:
+        path: meteor npm run stylelint
+
+  - task: unittests
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: alpine}
+      inputs:
+        - name: installed
+      run:
+        path: meteor npm run testunit
