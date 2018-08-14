@@ -72,7 +72,7 @@ describe('[Login]', () => {
 describe('[Setup Wizard]', () => {
 	before(()=>{
 		setupWizard.login();
-		setupWizard.organizationType.waitForVisible(15000);
+		setupWizard.organizationType.waitForVisible(25000);
 	});
 
 	describe('[Render - Step 1]', () => {
