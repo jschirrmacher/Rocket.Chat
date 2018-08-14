@@ -3,7 +3,7 @@ resources:
 - name: github
   type: git
   source:
-    uri: https://github.com/assistify/Rocket.Chat.git
+    uri: https://github.com/jschirrmacher/Rocket.Chat.git
     branch: develop
 
 jobs:
