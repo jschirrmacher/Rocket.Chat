@@ -57,11 +57,6 @@ jobs:
             meteor npm install
 
       - run:
-          name: Install submodules
-          command: |
-            git submodule init && git submodule update
-
-      - run:
           name: Lint
           command: |
             meteor npm run lint
@@ -87,7 +82,7 @@ jobs:
       - run:
           name: Build Rocket.Chat
           command: |
-            if [[ $CIRCLE_TAG ]] || [[ $CIRCLE_BRANCH == "develop" ]] || [[ $CIRCLE_BRANCH == "master" ]]; then meteor reset; fi
+            if [[ $CIRCLE_TAG ]]; then meteor reset; fi
             set +e
             meteor add rocketchat:lib
             set -e
@@ -101,7 +96,6 @@ jobs:
             tar czf /tmp/build/Rocket.Chat.tar.gz bundle
             cd /tmp/build-test/bundle/programs/server
             npm install
-            npm install pseudomap
 
       # - save_cache:
       #     key: node-modules-cache-{{ checksum ".circleci/config.yml" }}-{{ checksum "package.json" }}
@@ -143,8 +137,7 @@ jobs:
       - image: circleci/node:8.9-browsers
       - image: mongo:3.4
         command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
-    # ulimits:
-    #     core: -1
+
     environment:
       TEST_MODE: "true"
       MONGO_URL: mongodb://localhost:27017/testwithoplog
@@ -159,10 +152,12 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
+            echo "deb [ arch=amd64 ] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
             echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list
             sudo apt-get update
-            sudo apt-get install -y mongodb-org-shell
+            sudo apt-get install -y mongodb-org-shell google-chrome-stable
 
       - run:
           name: Configure Replica Set
@@ -176,18 +171,10 @@ jobs:
             npm install
 
       - run:
-            name: Install Chrome
-            command: |
-              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-              sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-              sudo apt-get update
-              sudo apt-get -y install google-chrome-stable
-
-      - run:
           name: Run Tests
           command: |
-            rm -rf ./tests/end-to-end/ui_smarti # Smarti tests run separately
-            npm test
+            for i in $(seq 1 5); do npm test && s=0 && break || s=$? && sleep 1; done; (exit $s)
+
       - store_artifacts:
           path: .screenshots/
 
@@ -196,18 +183,24 @@ jobs:
     docker:
       - image: circleci/node:8.9-browsers
       - image: circleci/mongo:3.4
-    # ulimits:
-    #   core: -1
 
     environment:
       TEST_MODE: "true"
-      MONGO_URL: mongodb://localhost:27017/testwithoutplog
+      MONGO_URL: mongodb://localhost:27017/testwithoplog
 
     steps:
       - attach_workspace:
           at: /tmp
 
       - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+            echo "deb [ arch=amd64 ] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
+            sudo apt-get update
+            sudo apt-get install -y google-chrome-stable
 
       - run:
           name: NPM install
@@ -215,83 +208,14 @@ jobs:
             npm install
 
       - run:
-            name: Install Chrome
-            command: |
-              wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-              sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-              sudo apt-get update
-              sudo apt-get -y install google-chrome-stable
-
-      - run:
           name: Run Tests
           command: |
-            rm -rf ./tests/end-to-end/ui_smarti # Smarti tests run separately
-            npm test
+            for i in $(seq 1 5); do npm test && s=0 && break || s=$? && sleep 1; done; (exit $s)
 
       - store_artifacts:
           path: .screenshots/
 
-  test-smarti:
-    <<: *defaults
-    docker:
-      - image: circleci/node:8.9.4-browsers
-      - image: circleci/mongo:3.4
-        command: [mongod, --nojournal, --noprealloc, --smallfiles, --replSet=rs0]
-      - image: assisitfy/smarti:0.7.6
-        environment:
-          DOWNLOAD_NLP_LIBS: "true"
-          SPRING_DATA_MONGODB_URI: "mongodb://localhost:27017/smarti"
-          SECURITY_CONFIG_MONGO_ADMIN-PASSWORD: "admin"
-    # ulimits:
-    #     core: -1
-
-    environment:
-      TEST_MODE: "true"
-      MONGO_URL: mongodb://localhost:27017/testsmarti
-      SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/smarti
-      SECURITY_CONFIG_MONGO_ADMIN-PASSWORD: admin
-
-    steps:
-      - attach_workspace:
-          at: /tmp
-
-      - checkout
-
-      # Enable remote docker host for temporary images (see https://circleci.com/docs/2.0/building-docker-images/
-      # - setup_remote_docker:
-      #     docker_layer_caching: true
-
-      # - run:
-      #     name: Build and start Smarti
-      #     command: |
-      #       docker pull assisitfy/smarti:0.7.0-RC1
-      #       docker build -t smarti-with-stanfordnlp - < .scripts/dockerfile-smarti-with-nlp
-      #       docker run -d --name smarti --net=host smarti-with-stanfordnlp  --security.config.mongo.admin-password=admin --spring.data.mongodb.uri=mongodb://localhost/smarti
-#
-      # - run:
-      #     name: NPM install
-      #     command: |
-      #       npm install
-
-      # - run:
-      #       name: Install Chrome
-      #       command: |
-      #         wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-      #         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-      #         sudo apt-get update
-      #         sudo apt-get -y install google-chrome-stable
-
-      - run:
-          name: Run Tests
-          command: |
-            shopt -s extglob
-            rm -rf ./tests/end-to-end/!(ui_smarti) # remove all non-Smarti-tests
-            npm test
-
-      - store_artifacts:
-          path: .screenshots/
-
-  aws-upload-artifact:
+  deploy:
     <<: *defaults
     docker:
       - image: circleci/node:8.9
@@ -318,11 +242,25 @@ jobs:
           name: Publish assets
           command: |
             if [[ $CIRCLE_PULL_REQUESTS ]]; then exit 0; fi;
-            bash .scripts/deploy-assistify-chat.sh
 
-  publish-docker:
+            export PATH=~/.local/bin:$PATH
+            export CIRCLE_TAG=${CIRCLE_TAG:=}
+
+            source .circleci/setartname.sh
+            source .circleci/setdeploydir.sh
+            bash .circleci/setupsig.sh
+            bash .circleci/namefiles.sh
+            # echo ".circleci/sandstorm.sh"
+
+            aws s3 cp $ROCKET_DEPLOY_DIR/ s3://download.rocket.chat/build/ --recursive
+
+            bash .circleci/update-releases.sh
+            bash .circleci/snap.sh
+            bash .circleci/redhat-registry.sh
+
+  image-build:
     <<: *defaults
-    timeout: 1200
+
     docker:
       - image: docker:17.05.0-ce-git
 
@@ -335,33 +273,99 @@ jobs:
       - setup_remote_docker
 
       - run:
-          command: docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-      - run:
-          no_output_timeout: 20m
+          name: Build Docker image
           command: |
-            if [[ ! -z $CI_PULL_REQUEST ]]
-              then
-                docker build -t assistify/chat:pr-${CIRCLE_PULL_REQUEST##*/} -f .docker/Dockerfile.local .
-                docker push assistify/chat:pr-${CIRCLE_PULL_REQUEST##*/}
-            else
-              if [[ ! -z ${CIRCLE_TAG} ]]
-                then
-                  docker build -t assistify/chat:${CIRCLE_TAG} -f .docker/Dockerfile.local .
-                  docker push assistify/chat:${CIRCLE_TAG}
-              else
-                if [[ ${CIRCLE_BRANCH} == develop ]]
-                  then
-                    docker build -t assistify/chat:develop -f .docker/Dockerfile.local .
-                    docker push assistify/chat:develop
-                else
-                  if [[ ${CIRCLE_BRANCH} == master ]]
-                  then
-                    docker build -t assistify/chat:latest -f .docker/Dockerfile.local .
-                    docker push assistify/chat:latest
-                  fi
-                fi
+            cd /tmp/build
+            tar xzf Rocket.Chat.tar.gz
+            rm Rocket.Chat.tar.gz
+
+            export CIRCLE_TAG=${CIRCLE_TAG:=}
+            if [[ $CIRCLE_TAG ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+              echo "Build official Docker image"
+              cp ~/repo/.docker/Dockerfile .
+              docker build -t rocketchat/rocket.chat:$CIRCLE_TAG .
+              docker push rocketchat/rocket.chat:$CIRCLE_TAG
+
+              echo "Build preview Docker image"
+              cp ~/repo/.docker-mongo/Dockerfile .
+              cp ~/repo/.docker-mongo/entrypoint.sh .
+              docker build -t rocketchat/rocket.chat.preview:$CIRCLE_TAG .
+              docker push rocketchat/rocket.chat.preview:$CIRCLE_TAG
+
+              if echo "$CIRCLE_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' ; then
+                docker tag rocketchat/rocket.chat:$CIRCLE_TAG rocketchat/rocket.chat:latest
+                docker push rocketchat/rocket.chat:latest
+
+                docker tag rocketchat/rocket.chat.preview:$CIRCLE_TAG rocketchat/rocket.chat.preview:latest
+                docker push rocketchat/rocket.chat.preview:latest
+              elif echo "$CIRCLE_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$' ; then
+                docker tag rocketchat/rocket.chat:$CIRCLE_TAG rocketchat/rocket.chat:release-candidate
+                docker push rocketchat/rocket.chat:release-candidate
+
+                docker tag rocketchat/rocket.chat.preview:$CIRCLE_TAG rocketchat/rocket.chat.preview:release-candidate
+                docker push rocketchat/rocket.chat.preview:release-candidate
               fi
-            fi
+
+              exit 0
+            fi;
+
+            if [[ $CIRCLE_BRANCH == 'develop' ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+              echo "Build official Docker image"
+              cp ~/repo/.docker/Dockerfile .
+              docker build -t rocketchat/rocket.chat:develop .
+              docker push rocketchat/rocket.chat:develop
+
+              echo "Build preview Docker image"
+              cp ~/repo/.docker-mongo/Dockerfile .
+              cp ~/repo/.docker-mongo/entrypoint.sh .
+              docker build -t rocketchat/rocket.chat.preview:develop .
+              docker push rocketchat/rocket.chat.preview:develop
+
+              exit 0
+            fi;
+
+  pr-image-build:
+    <<: *defaults
+
+    docker:
+      - image: docker:17.05.0-ce-git
+
+    steps:
+      - attach_workspace:
+          at: /tmp
+
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Build Docker image for PRs
+          command: |
+            export CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
+            if [[ -z $CIRCLE_PR_NUMBER ]]; then
+              exit 0
+            fi;
+
+            cd /tmp/build
+            tar xzf Rocket.Chat.tar.gz
+            rm Rocket.Chat.tar.gz
+
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+            echo "Build official Docker image"
+            cp ~/repo/.docker/Dockerfile .
+            docker build -t rocketchat/rocket.chat:pr-$CIRCLE_PR_NUMBER .
+            docker push rocketchat/rocket.chat:pr-$CIRCLE_PR_NUMBER
+
+            echo "Build preview Docker image"
+            cp ~/repo/.docker-mongo/Dockerfile .
+            cp ~/repo/.docker-mongo/entrypoint.sh .
+            docker build -t rocketchat/rocket.chat.preview:pr-$CIRCLE_PR_NUMBER .
+            docker push rocketchat/rocket.chat.preview:pr-$CIRCLE_PR_NUMBER
 
 workflows:
   version: 2
@@ -370,50 +374,51 @@ workflows:
       - build:
           filters:
             tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
       - test-with-oplog:
           requires:
             - build
           filters:
             tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
       - test-without-oplog:
           requires:
             - build
           filters:
             tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+      - deploy:
+          requires:
+            - test-with-oplog
+            - test-without-oplog
+          filters:
             branches:
-              only:
-                - circle-without-oplog
-      - test-smarti:
+              only: develop
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+      - image-build:
+          requires:
+            - deploy
+          filters:
+            branches:
+              only: develop
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+      - hold:
+          type: approval
           requires:
             - build
           filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
             branches:
-              only:
-                - circle-smarti
-      - aws-upload-artifact:
+              ignore: develop
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+      - pr-image-build:
           requires:
-            - test-with-oplog
-            # - test-without-oplog
-            # - test-smarti
+            - hold
           filters:
             branches:
-              only:
-                - develop
-                - master
-                - /^release\/v?[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              ignore: develop
             tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
 
-      - publish-docker:
-          requires:
-            - test-with-oplog
-            # - test-without-oplog
-            # - test-smarti
-          filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$/
