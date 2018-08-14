@@ -1,5 +1,6 @@
 #!/bin/sh
 
+set -x
 set +e
 METEOR_SYMLINK_TARGET=$(readlink ~/.meteor/meteor)
 METEOR_TOOL_DIRECTORY=$(dirname "$METEOR_SYMLINK_TARGET")
