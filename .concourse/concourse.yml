@@ -1,0 +1,26 @@
+---
+resources:
+- name: github
+  type: git
+  source:
+    uri: https://github.com/assistify/Rocket.Chat.git
+    branch: develop
+
+jobs:
+- name: rocketchat
+  public: true
+  plan:
+
+  - get: github
+    trigger: true
+
+  - task: install-meteor
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: alpine}
+      inputs:
+        - name: github
+      run:
+        path: github/.concourse/install-meteor.sh
