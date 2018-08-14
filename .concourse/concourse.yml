@@ -22,7 +22,7 @@ jobs:
         source: {repository: node, tag: carbon}
       inputs:
         - name: github
-      cache:
+      caches:
         - path: /root/.meteor/./scripts/admin
       outputs:
         - name: installed
