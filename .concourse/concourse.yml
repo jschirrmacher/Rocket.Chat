@@ -19,7 +19,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: jshimko/meteor-launchpad}
+        source: {repository: node, tag: carbon}
       inputs:
         - name: github
       caches:
