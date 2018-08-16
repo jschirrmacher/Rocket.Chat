@@ -28,12 +28,12 @@ metadata:
   creationTimestamp: null
   name: gitlab-runner
 objects:
-- apiVersion: v1
-  kind: ServiceAccount
+- kind: ServiceAccount
+  apiVersion: v1
   metadata:
     name: sa-gitlab-runner
-- apiVersion: v1
-  kind: RoleBinding
+- kind: RoleBinding
+  apiVersion: v1
   metadata:
     name: edit
   groupNames: null
@@ -42,12 +42,8 @@ objects:
       name: sa-gitlab-runner
   roleRef:
     name: edit
-- apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: sa-minio
-- apiVersion: v1
-  kind: ImageStream
+- kind: ImageStream
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     labels:
@@ -57,16 +53,28 @@ objects:
     dockerImageRepository: ""
     tags:
       -
-       from:
-         kind: DockerImage
-         name: gitlab/gitlab-runner:${GITLAB_RUNNER_IMAGE_DOCKER_TAG}
        name: gitlab_runner_pseudo_tag
        importPolicy:
          scheduled: true
   status:
     dockerImageRepository: ""
-- apiVersion: v1
-  kind: Service
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: gitlab-runner
+  spec:
+    runPolicy: Serial
+    source: 
+      dockerfile: "FROM gitlab/gitlab-runner:alpine"
+    strategy: 
+      dockerStrategy:
+      type: Docker
+    output: 
+      to:
+        kind: ImageStreamTag
+        name: is-gitlab-runner:latest
+- kind: Service
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: ${GITLAB_RUNNER_SERVICE_NAME}
@@ -84,8 +92,8 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: dc-${GITLAB_RUNNER_SERVICE_NAME}
@@ -162,8 +170,8 @@ objects:
       type: ImageChange
     - type: ConfigChange
   status: {}
-- apiVersion: v1
-  kind: ConfigMap
+- kind: ConfigMap
+  apiVersion: v1
   metadata:
     name: cm-gitlab-runner
   data:
@@ -201,8 +209,12 @@ objects:
 
 ### minio integration for cache
 # based on the https://github.com/lwolf/kubernetes-gitlab/tree/master/minio
-- apiVersion: v1
-  kind: ImageStream
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: sa-minio
+- kind: ImageStream
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     labels:
@@ -220,9 +232,8 @@ objects:
          scheduled: true
   status:
     dockerImageRepository: ""
-
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: ${MINIO_SERVICE_NAME}
@@ -240,9 +251,8 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: dc-${MINIO_SERVICE_NAME}
@@ -328,7 +338,7 @@ parameters:
   displayName: GitLab CI URL
   name: GITLAB_RUNNER_CI_URL
   required: true
-  value: https://gitlab.com/ci
+  value: https://git.tech.rz.db.de/
 
 - description: The runner token, it's not the one from Runners page. Please run 'gitlab-runner register' locally and then get real token from /etc/gitlab-runner/config.toml.
   displayName: GitLab Runner Token (It is not the one from Runners page, but the one from config.toml)
@@ -344,7 +354,7 @@ parameters:
   displayName: GitLab Runner jobs
   name: GITLAB_RUNNER_JOBS
   required: true
-  value: "2"
+  value: "1"
 
 - description: Maximum amount of memory the container can use.
   displayName: Memory Limit
