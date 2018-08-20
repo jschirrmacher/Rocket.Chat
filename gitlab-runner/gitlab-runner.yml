@@ -185,22 +185,7 @@ objects:
         name = "GitLab Runner"
         url = "${GITLAB_RUNNER_CI_URL}"
         token = "${GITLAB_RUNNER_TOKEN}"
-        executor = "kubernetes"
-        [runners.kubernetes]
-          namespace = "${GITLAB_RUNNER_NAMESPACE}"
-          privileged = false
-          host = ""
-          cert_file = ""
-          key_file = ""
-          ca_file = ""
-          image = ""
-          cpus = ""
-          memory = ""
-          service_cpus = ""
-          service_memory = ""
-          helper_cpus = ""
-          helper_memory = ""
-          helper_image = ""
+        executor = "shell"
         [runners.cache]
           Type = "s3"
           ServerAddress = "${MINIO_SERVICE_NAME}:80"
