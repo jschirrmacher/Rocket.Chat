@@ -65,7 +65,9 @@ objects:
   spec:
     runPolicy: Serial
     source: 
-      dockerfile: "FROM gitlab/gitlab-runner:alpine"
+      dockerfile: |
+        FROM gitlab/gitlab-runner:alpine
+        USER gitlab-runner
     strategy: 
       dockerStrategy:
       type: Docker
