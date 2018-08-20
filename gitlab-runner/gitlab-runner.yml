@@ -165,7 +165,7 @@ objects:
         - cnt-gitlab-runner
         from:
           kind: ImageStreamTag
-          name: is-gitlab-runner:gitlab_runner_pseudo_tag
+          name: is-gitlab-runner:latest
         lastTriggeredImage: ""
       type: ImageChange
     - type: ConfigChange
