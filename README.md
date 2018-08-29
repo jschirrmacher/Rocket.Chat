@@ -1,6 +1,5 @@
 # Assistify Chat
 
-
 This is the chat-component of Assistify, bringing your team state-of-the art collaboration with integrated, AI powered knowledge management.
 
 It is based on the awesome Rocket.Chat-project and extends some capabilities.
